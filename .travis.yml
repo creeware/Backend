@@ -14,3 +14,11 @@ cache:
 # Code Coverage
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+
+deploy:
+  provider: heroku
+  api_key: $HEROKU_API_KEY
+  app:
+    develop: powerline-backend-staging
+    master: powerline-backend-production
