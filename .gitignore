@@ -223,3 +223,11 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Terraform env variables
+*.tfvars
+
+# Environment Variables
+.env
+
+
