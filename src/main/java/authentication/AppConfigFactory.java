@@ -14,7 +14,7 @@ import org.pac4j.sparkjava.DefaultHttpActionAdapter;
 public class AppConfigFactory {
 
     public static Config build(final Object... parameters) {
-        Dotenv dotenv = Dotenv.load();
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
         GitHubClient gitHubClient = new GitHubClient(dotenv.get("GITHUB_OAUTH_KEY"), dotenv.get("GITHUB_OAUTH_SECRET"));
 

@@ -13,6 +13,7 @@ public class Main {
 
         before(Web.LOGIN, AuthenticationController.serveLoginPage());
         before("/api", (req, res) -> AuthenticationController.ensureUserIsLoggedIn(req, res));
+        before("/api/*", (req, res) -> AuthenticationController.ensureUserIsLoggedIn(req, res));
 
         redirect.get(Web.LOGIN, "/api/user_profile");
         redirect.get("/", "/api");
