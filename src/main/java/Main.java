@@ -1,7 +1,20 @@
 import authentication.AuthenticationController;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import handlers.NewUserPayload;
+import io.github.cdimascio.dotenv.Dotenv;
+import model.Model;
+import org.sql2o.*;
+import org.sql2o.converters.*;
+import org.sql2o.quirks.PostgresQuirks;
+import sql2omodel.Sql2oModel;
+import user.Profile;
 import util.JsonTransformer;
 import util.Path.*;
-import static User.ProfileController.getProfile;
+
+import java.util.UUID;
+
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static user.ProfileController.getProfile;
 import static spark.Spark.*;
 
 
@@ -10,6 +23,38 @@ public class Main {
 
     public static void main(String[] args) {
         port(getHerokuAssignedPort());
+
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+
+        Sql2o sql2o = new Sql2o("jdbc:postgresql://" + dotenv.get("DB_HOST") + ":" + dotenv.get("DB_PORT") + "/",
+                dotenv.get("DB_USER_NAME"), dotenv.get("DB_PASSWORD"), new PostgresQuirks() {
+            {
+                // make sure we use default UUID converter.
+                converters.put(UUID.class, new UUIDConverter());
+            }
+        });
+
+        Model model = new Sql2oModel(sql2o);
+
+        // insert a user (using HTTP post method)
+        post("/users", (request, response) -> {
+            ObjectMapper mapper = new ObjectMapper();
+            NewUserPayload creation = mapper.readValue(request.body(), NewUserPayload.class);
+            if (!creation.isValid()) {
+                response.status(HTTP_BAD_REQUEST);
+                return "";
+            }
+            UUID id = model.createUser(
+                    creation.getUser_display_name(),
+                    creation.getUser_name(),
+                    creation.getAvatar_url(),
+                    creation.getProfile_url(),
+                    creation.getUser_role(),
+                    creation.getUser_location());
+            response.status(200);
+            response.type("application/json");
+            return id;
+        });
 
         before(Web.LOGIN, AuthenticationController.serveLoginPage());
         before("/api", (req, res) -> AuthenticationController.ensureUserIsLoggedIn(req, res));
@@ -20,6 +65,11 @@ public class Main {
 
         get(Web.API, (req,res) -> "hello world");
         get(Web.USER_PROFILE, "application/json", (req,res) -> getProfile.handle(req, res), new JsonTransformer());
+
+        after(Web.LOGIN, (request, response) -> {
+            Profile user = new Profile(request, response);
+            user.createUser(model);
+        });
 
         get(Web.CALLBACK,(req,res) ->  AuthenticationController.callback().handle(req, res));
         post(Web.CALLBACK,(req,res) ->  AuthenticationController.callback().handle(req, res));
