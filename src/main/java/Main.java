@@ -3,6 +3,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import handlers.NewUserPayload;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.Model;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sql2o.*;
 import org.sql2o.converters.*;
 import org.sql2o.quirks.PostgresQuirks;
@@ -11,6 +13,8 @@ import user.Profile;
 import util.JsonTransformer;
 import util.Path.*;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
@@ -19,20 +23,30 @@ import static spark.Spark.*;
 
 
 public class Main {
-
+    private static URI dbUri;
+    public static Sql2o sql2o;
 
     public static void main(String[] args) {
+        Logger logger = LoggerFactory.getLogger(Main.class);
+
+
         port(getHerokuAssignedPort());
 
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
-        Sql2o sql2o = new Sql2o("jdbc:postgresql://" + dotenv.get("DB_HOST") + ":" + dotenv.get("DB_PORT") + "/",
-                dotenv.get("DB_USER_NAME"), dotenv.get("DB_PASSWORD"), new PostgresQuirks() {
-            {
-                // make sure we use default UUID converter.
-                converters.put(UUID.class, new UUIDConverter());
-            }
-        });
+        try {
+            dbUri = new URI(dotenv.get("DATABASE_URL"));
+
+            int port = dbUri.getPort();
+            String host = dbUri.getHost();
+            String path = dbUri.getPath();
+            String username = (dbUri.getUserInfo() == null) ? dotenv.get("DB_USER_NAME") : dbUri.getUserInfo().split(":")[0];
+            String password = (dbUri.getUserInfo() == null) ? dotenv.get("DB_PASSWORD") : dbUri.getUserInfo().split(":")[1];
+
+            sql2o = new Sql2o("jdbc:postgresql://" + host + ":" + port + path, username, password);
+        } catch (URISyntaxException e ) {
+            logger.error("Unable to connect to database.");
+        }
 
         Model model = new Sql2oModel(sql2o);
 
