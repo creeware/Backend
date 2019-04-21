@@ -77,6 +77,7 @@
             <artifactId>sql2o</artifactId>
             <version>1.5.4</version>
         </dependency>
+
     </dependencies>
 
     <properties>
@@ -156,6 +157,16 @@
                     </processTypes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <configuration>
+                    <user>${env.DB_USER_NAME}</user>
+                    <password>${env.DB_PASSWORD}</password>
+                    <url>jdbc:${env.DATABASE_URL}</url>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 </project>
