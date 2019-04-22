@@ -1,5 +1,6 @@
 package user;
 
+import email.WelcomeEmail;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.Model;
 import model.User;
@@ -40,6 +41,8 @@ public class Profile {
                     profile.getProfileUrl().toString(),
                     "user",
                     profile.getLocation());
+
+            WelcomeEmail.main(profile.getEmail());
 
             return id;
         }

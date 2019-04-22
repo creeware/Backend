@@ -3,8 +3,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import handlers.NewUserPayload;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.Model;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sql2o.*;
 import sql2omodel.Sql2oModel;
 import user.Profile;
@@ -24,9 +22,6 @@ public class Main {
     public static Sql2o sql2o;
 
     public static void main(String[] args) {
-        Logger logger = LoggerFactory.getLogger(Main.class);
-
-
         port(getHerokuAssignedPort());
 
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
