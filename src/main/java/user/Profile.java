@@ -1,30 +1,42 @@
 package user;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import model.Model;
+import model.User;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.sparkjava.SparkWebContext;
+import org.sql2o.Sql2o;
 import spark.*;
+import sql2omodel.Sql2oModel;
+
+import java.util.Optional;
 import java.util.UUID;
 
 
 public class Profile {
     private CommonProfile profile;
+    private Model model;
 
     public Profile(final Request request, final Response response) {
         profile = (CommonProfile) getProfile(request, response).get();
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+        Sql2o sql2o = new Sql2o(dotenv.get("JDBC_DATABASE_URL"), dotenv.get("JDBC_DATABASE_USERNAME"), dotenv.get("JDBC_DATABASE_PASSWORD"));
+        model = new Sql2oModel(sql2o);
     }
 
-    public CommonProfile getProfile(){
-        return profile;
+    public Optional<User> getProfile(){
+        return model.getUserByNameAndClient(profile.getUsername(), profile.getClientName());
     }
 
-    public UUID createUser(Model model){
-        if(!model.existUserByName(profile.getUsername())){
+    public UUID createUser(){
+        if(!model.existUserByNameAndClient(profile.getUsername(), profile.getClientName())){
             UUID id = model.createUser(
-                    profile.getUsername(),
                     profile.getDisplayName(),
+                    profile.getUsername(),
                     profile.getEmail(),
+                    profile.getClientName(),
+                    profile.getPictureUrl().toString(),
                     profile.getProfileUrl().toString(),
                     "user",
                     profile.getLocation());

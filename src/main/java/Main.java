@@ -6,15 +6,12 @@ import model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sql2o.*;
-import org.sql2o.converters.*;
-import org.sql2o.quirks.PostgresQuirks;
 import sql2omodel.Sql2oModel;
 import user.Profile;
 import util.JsonTransformer;
 import util.Path.*;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.UUID;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
@@ -34,19 +31,10 @@ public class Main {
 
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
-        try {
-            dbUri = new URI(dotenv.get("DATABASE_URL"));
 
-            int port = dbUri.getPort();
-            String host = dbUri.getHost();
-            String path = dbUri.getPath();
-            String username = (dbUri.getUserInfo() == null) ? dotenv.get("DB_USER_NAME") : dbUri.getUserInfo().split(":")[0];
-            String password = (dbUri.getUserInfo() == null) ? dotenv.get("DB_PASSWORD") : dbUri.getUserInfo().split(":")[1];
 
-            sql2o = new Sql2o("jdbc:postgresql://" + host + ":" + port + path, username, password);
-        } catch (URISyntaxException e ) {
-            logger.error("Unable to connect to database.");
-        }
+        sql2o = new Sql2o(dotenv.get("JDBC_DATABASE_URL"), dotenv.get("JDBC_DATABASE_USERNAME"), dotenv.get("JDBC_DATABASE_PASSWORD"));
+
 
         Model model = new Sql2oModel(sql2o);
 
@@ -60,7 +48,9 @@ public class Main {
             }
             UUID id = model.createUser(
                     creation.getUser_display_name(),
-                    creation.getUser_name(),
+                    creation.getUsername(),
+                    creation.getUser_email(),
+                    creation.getUser_client(),
                     creation.getAvatar_url(),
                     creation.getProfile_url(),
                     creation.getUser_role(),
@@ -82,7 +72,7 @@ public class Main {
 
         after(Web.LOGIN, (request, response) -> {
             Profile user = new Profile(request, response);
-            user.createUser(model);
+            user.createUser();
         });
 
         get(Web.CALLBACK,(req,res) ->  AuthenticationController.callback().handle(req, res));

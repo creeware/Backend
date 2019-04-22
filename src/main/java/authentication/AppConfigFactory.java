@@ -17,7 +17,7 @@ public class AppConfigFactory {
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
         GitHubClient gitHubClient = new GitHubClient(dotenv.get("GITHUB_OAUTH_KEY"), dotenv.get("GITHUB_OAUTH_SECRET"));
-        gitHubClient.setScope("user,repo,admin:org,admin:org_hook,delete_repo");
+        gitHubClient.setScope("user, user:email,repo,admin:org,admin:org_hook,delete_repo");
         
         final Clients clients = new Clients(dotenv.get("GITHUB_OAUTH_CALLBACK_URL"), gitHubClient);
 

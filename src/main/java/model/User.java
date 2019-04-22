@@ -8,7 +8,9 @@ import java.util.UUID;
 public class User {
     UUID user_uuid;
     String user_display_name;
-    String user_name;
+    String username;
+    String user_email;
+    String user_client;
     String avatar_url;
     String profile_url;
     String user_role;

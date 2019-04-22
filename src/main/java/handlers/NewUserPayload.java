@@ -6,7 +6,9 @@ import util.Validable;
 @Data
 public class NewUserPayload implements Validable {
     String user_display_name;
-    String user_name;
+    String username;
+    String user_email;
+    String user_client;
     String avatar_url;
     String profile_url;
     String user_role;

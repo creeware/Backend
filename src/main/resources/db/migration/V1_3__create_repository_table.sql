@@ -5,11 +5,11 @@ CREATE TABLE public.repositories(
     repository_name VARCHAR(500) NOT NULL,
     repository_description VARCHAR(500),
     repository_visibility VARCHAR(250),
-    repository_git_url VARCHAR(2000) NOT NULL,
-    repository_github_type VARCHAR(250) NOT NULL,
+    repository_git_url VARCHAR(2000),
+    repository_github_type VARCHAR(250),
     repository_type VARCHAR(250) NOT NULL DEFAULT 'challenge template',
     repository_status VARCHAR(250) NOT NULL DEFAULT 'unprocessed',
-    repository_submission_date date NOT NULL,
+    repository_submission_date date,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ
 );

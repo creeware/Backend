@@ -6,7 +6,9 @@ import java.util.UUID;
 
 public interface Model {
     UUID createUser(String user_display_name,
-            String user_name,
+            String username,
+            String user_email,
+            String user_client,
             String avatar_url,
             String profile_url,
             String user_role,
@@ -25,11 +27,12 @@ public interface Model {
 
 
     boolean existUser(UUID user);
-    boolean existUserByName(String displayName);
+    boolean existUserByNameAndClient(String username, String user_client);
     //boolean existRepository(UUID repository);
     //boolean existOrganization(UUID organization);
 
     Optional<User> getUser(UUID uuid);
+    Optional<User> getUserByNameAndClient(String username, String user_client);
     //Optional<Repository> getRepository(UUID uuid);
     //Optional<Organization> getOrganization(UUID uuid);
 
