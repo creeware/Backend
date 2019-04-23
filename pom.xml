@@ -9,11 +9,11 @@
     <version>1.0</version>
 
     <repositories>
-    <repository>
-        <id>eclipse</id>
-        <name>eclipse</name>
-        <url>https://repo.eclipse.org/content/groups/releases/</url>
-    </repository>
+        <repository>
+            <id>eclipse</id>
+            <name>eclipse</name>
+            <url>https://repo.eclipse.org/content/groups/releases/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -197,4 +197,3 @@
         </plugins>
     </build>
 </project>
-
