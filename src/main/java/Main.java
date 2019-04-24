@@ -64,7 +64,10 @@ public class Main {
 
         get(Web.API, (req,res) -> "hello world");
         get(Web.USER_PROFILE, "application/json", (req,res) -> getProfile.handle(req, res), new JsonTransformer());
-
+        post("/hook_payload", "*/*", (req, res) -> {
+            System.out.println(req.body());
+            return "it works!";
+        });
         after(Web.LOGIN, (request, response) -> {
             Profile user = new Profile(request, response);
             user.createUser();

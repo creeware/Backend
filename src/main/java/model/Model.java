@@ -14,15 +14,20 @@ public interface Model {
                     String user_role,
                     String user_location);
 
-    UUID createRepository(String repository_name,
+    UUID createRepository(UUID user_uuid,
+                          UUID organization_uuid,
+                          String repository_name,
                           String repository_description,
                           String repository_visibility,
                           String repository_git_url,
                           String repository_github_type,
                           String repository_type,
-                          String repository_status);
+                          String repository_status,
+                          String solution_repository_git_url
+    );
 
     UUID createOrganization(String organization_name,
+                            String company_name,
                             String organization_description,
                             int repository_count,
                             String organization_git_url,
@@ -55,6 +60,7 @@ public interface Model {
     Optional<Repository> getRepository(UUID uuid);
 
     Optional<Organization> getOrganization(UUID uuid);
+    Optional<Organization> getOrganizationbyName(String organization_name);
 
     void updateUser(User user);
 

@@ -10,6 +10,7 @@ public class Organization {
     UUID user_uuid;
     String organization_name;
     String organization_description;
+    String company_name;
     int repository_count;
     String organization_git_url;
     String organization_github_type;

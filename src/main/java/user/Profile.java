@@ -26,8 +26,9 @@ public class Profile {
         model = new Sql2oModel(sql2o);
     }
 
-    public Optional<User> getProfile(){
-        return model.getUserByNameAndClient(profile.getUsername(), profile.getClientName());
+    public java.util.Map getProfile(){
+        return profile.getAttributes();
+                // model.getUserByNameAndClient(profile.getUsername(), profile.getClientName());
     }
 
     public UUID createUser(){
