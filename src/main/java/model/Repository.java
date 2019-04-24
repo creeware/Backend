@@ -9,7 +9,7 @@ public class Repository {
     UUID repository_uuid;
     UUID user_uuid;
     UUID organization_uuid;
-    String repostory_name;
+    String repository_name;
     String repository_description;
     String repository_visibility;
     String repository_git_url;
