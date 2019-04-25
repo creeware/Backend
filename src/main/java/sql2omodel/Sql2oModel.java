@@ -2,7 +2,6 @@ package sql2omodel;
 
 import model.*;
 import org.jetbrains.annotations.NotNull;
-import org.sql2o.Query;
 import util.RandomUuidGenerator;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
@@ -136,11 +135,14 @@ public class Sql2oModel implements Model {
     }
 
     @Override
-    public void deleteUser(UUID uuid) {
+    public String deleteUser(UUID uuid) {
         try (Connection conn = sql2o.open()) {
             conn.createQuery("delete from users where user_uuid=:user_uuid")
                     .addParameter("user_uuid", uuid)
                     .executeUpdate();
+            return "200";
+        } catch (Exception e){
+            return "400";
         }
     }
 
@@ -257,10 +259,11 @@ public class Sql2oModel implements Model {
     @Override
     public void updateRepository(Repository repository) {
         try (Connection conn = sql2o.open()) {
-            conn.createQuery("update repositories set repository_name=:repository_name," +
+            conn.createQuery("update repositories set repository_name=:repository_name, " +
                     "repository_description=:repository_description, repository_visibility=:repository_visibility," +
                     "repository_git_url=:repository_git_url, repository_github_type=:repository_github_type," +
-                    "repository_type=:repository_type, repository_status=:repository_status,  solution_repository_git_url=:solution_repository_git_url " +
+                    "repository_type=:repository_type, repository_status=:repository_status, " +
+                    "solution_repository_git_url=:solution_repository_git_url, updated_at=:updated_at " +
                     "where repository_uuid=:repository_uuid")
                     .addParameter("repository_uuid", repository.getRepository_uuid())
                     .addParameter("repository_name", repository.getRepository_name())
@@ -271,16 +274,20 @@ public class Sql2oModel implements Model {
                     .addParameter("repository_type", repository.getRepository_type())
                     .addParameter("repository_status", repository.getRepository_status())
                     .addParameter("solution_repository_git_url", repository.getSolution_repository_git_url())
+                    .addParameter("updated_at", new Date())
                     .executeUpdate();
         }
     }
 
     @Override
-    public void deleteRepository(UUID uuid) {
+    public String deleteRepository(UUID uuid) {
         try (Connection conn = sql2o.open()) {
             conn.createQuery("delete from repositories where repository_uuid=:repository_uuid")
                     .addParameter("repository_uuid", uuid)
                     .executeUpdate();
+            return "204";
+        } catch (Exception e){
+            return "400";
         }
     }
 
@@ -391,11 +398,14 @@ public class Sql2oModel implements Model {
     }
 
     @Override
-    public void deleteOrganization(UUID uuid) {
+    public String deleteOrganization(UUID uuid) {
         try (Connection conn = sql2o.open()) {
             conn.createQuery("delete from organizations where organization_uuid=:organization_uuid")
                     .addParameter("organization_uuid", uuid)
                     .executeUpdate();
+            return "200";
+        } catch (Exception e){
+            return "400";
         }
     }
 }
