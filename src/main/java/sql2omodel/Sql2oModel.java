@@ -2,6 +2,7 @@ package sql2omodel;
 
 import model.*;
 import org.jetbrains.annotations.NotNull;
+import org.sql2o.Query;
 import util.RandomUuidGenerator;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
@@ -230,6 +231,18 @@ public class Sql2oModel implements Model {
         }
     }
 
+    @Override
+    public Optional<Repository> getRepositoryByName(String repo_name) {
+        try (Connection conn = sql2o.open()) {
+            List<Repository> repositories = conn.createQuery("select * from repositories where repository_name=:repository_name")
+                            .addParameter("repository_name", repo_name)
+                            .executeAndFetch(Repository.class);
+            return getRepository(repositories);
+        }
+    }
+
+
+
     @NotNull
     private Optional<Repository> getRepository(List<Repository> repositories) {
         if (repositories.size() == 0) {
@@ -244,10 +257,11 @@ public class Sql2oModel implements Model {
     @Override
     public void updateRepository(Repository repository) {
         try (Connection conn = sql2o.open()) {
-            conn.createQuery("update repositories set repository_name=:repository_name, " +
+            conn.createQuery("update repositories set repository_name=:repository_name," +
                     "repository_description=:repository_description, repository_visibility=:repository_visibility," +
                     "repository_git_url=:repository_git_url, repository_github_type=:repository_github_type," +
-                    "repository_type=:repository_type, repository_status=:repository_status where repository_uuid=:repository_uuid")
+                    "repository_type=:repository_type, repository_status=:repository_status,  solution_repository_git_url=:solution_repository_git_url " +
+                    "where repository_uuid=:repository_uuid")
                     .addParameter("repository_uuid", repository.getRepository_uuid())
                     .addParameter("repository_name", repository.getRepository_name())
                     .addParameter("repository_description", repository.getRepository_description())

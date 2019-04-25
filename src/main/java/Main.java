@@ -1,5 +1,10 @@
 import authentication.AuthenticationController;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import controller.GithubController;
 import handlers.NewUserPayload;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.Model;
@@ -8,8 +13,8 @@ import sql2omodel.Sql2oModel;
 import user.Profile;
 import util.JsonTransformer;
 import util.Path.*;
-
 import java.net.URI;
+import java.util.Map;
 import java.util.UUID;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
@@ -65,8 +70,8 @@ public class Main {
         get(Web.API, (req,res) -> "hello world");
         get(Web.USER_PROFILE, "application/json", (req,res) -> getProfile.handle(req, res), new JsonTransformer());
         post("/hook_payload", "*/*", (req, res) -> {
-            System.out.println(req.body());
-            return "it works!";
+            String result = GithubController.payloadHandler(req, res, model);
+            return result;
         });
         after(Web.LOGIN, (request, response) -> {
             Profile user = new Profile(request, response);

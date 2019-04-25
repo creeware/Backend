@@ -10,7 +10,9 @@ public class FailEmail extends Email {
     private String body = "";
 
     private String subjectTemplate = "Your submission %s has been graded.";
-    private String bodyTemplate = "<style>\n" +
+    private String bodyTemplate =
+            "<html>" +
+            "<head> <style>\n" +
             ".row {  \n" +
             "  background-color: #fff;\n" +
             "  font-family: monospace, monospace;\n" +
@@ -23,13 +25,13 @@ public class FailEmail extends Email {
             ".rem {\n" +
             "background-color: #f55;  \n" +
             "}\n" +
-            "</style>" +
-            "Your failed %s, your answer does not match the solution.\n" +
+            "</style> </head>" +
+            "You have failed %s, your answer does not match the solution.\n" +
             "\n" +
             "The differences are:\n" +
             "<div style=\"width: 800px\">\n" +
             "%s" +
-            "</div>";
+            "</div>" + "</html>";
 
     public FailEmail(UUID recipient, String task, String rows) throws InvalidPropertiesFormatException {
         super();
