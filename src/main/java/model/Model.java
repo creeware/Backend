@@ -58,6 +58,7 @@ public interface Model {
     Optional<User> getUserByNameAndClient(String username, String user_client);
 
     Optional<Repository> getRepository(UUID uuid);
+    Optional<Repository> getRepositoryByName(String repo_name);
 
     Optional<Organization> getOrganization(UUID uuid);
     Optional<Organization> getOrganizationbyName(String organization_name);

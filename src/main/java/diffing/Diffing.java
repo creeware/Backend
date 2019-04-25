@@ -4,9 +4,6 @@ import java.io.*;
 import java.nio.file.Files;
 
 public class Diffing {
-    public static void main(String[] args){
-        System.out.println(diffRepositories("https://github.com/creeware/terraform_test", "https://github.com/centic9/jgit-cookbook"));
-    }
 
     public static String diffRepositories(String userURL, String solutionURL){
         String folder = userURL.split("/")[4];
@@ -26,13 +23,10 @@ public class Diffing {
 
         deleteDir(new File(folder));
 
-        // checkResult(result);
-
         return result;
-
     }
 
-    public static String executeCommand(String[] commArr){
+    private static String executeCommand(String[] commArr){
         String line;
         String result = "";
         try{

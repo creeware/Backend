@@ -28,7 +28,7 @@ import java.util.UUID;
 
 public class GithubManager {
 
-    public static void main (String[] args) throws IOException { }
+    public static void main (String[] args) throws IOException {}
 
     public static void createRepository(String access_token, String org_name, String[] user_names, String template_repo_name, String solution_repo_url) throws IOException{
         RepositoryService service = new RepositoryService();

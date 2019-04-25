@@ -46,7 +46,7 @@ public abstract class Email {
         formData.add("from", "Creeware <" + SENDER_MAIL + ">");
         formData.add("to", recipient);
         formData.add("subject", subject);
-        formData.add("text", body);
+        formData.add("html", body);
         return webResource.type(MediaType.APPLICATION_FORM_URLENCODED).post(ClientResponse.class,
                 formData);
     }
@@ -61,14 +61,17 @@ public abstract class Email {
             }
         };
 
-        email.sendMail("poasp@kth.se", "Testlel",
-                "<div class='cool'>" +
-                "<b>Test</b>" +
-                "</div>");
+        email.sendMail("pontus.asp@gmail.com", "Testlel",
+                "<html>HTML "+
+                        "<div class='cool'>" +
+                        "<b>Test</b>" +
+                        "</div>" +
+                        "</html>"
+                );
 
         UUID user = email.sql.createUser("Pontus Asp",
                 "pontusasp",
-                "poasp@kth.se",
+                "pontus.asp@gmail.com",
                 "pontusasp",
                 "https://avatars2.githubusercontent.com/u/18573650?s=460&v=4",
                 "https://github.com/pontusasp",
