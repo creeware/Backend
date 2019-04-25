@@ -147,18 +147,25 @@ public class Sql2oModel implements Model {
      * Repository
      **/
     @Override
-    public UUID createRepository(String repository_name,
+    public UUID createRepository(
+                                 UUID user_uuid,
+                                 UUID organization_uuid,
+                                 String repository_name,
                                  String repository_description,
                                  String repository_visibility,
                                  String repository_git_url,
                                  String repository_github_type,
                                  String repository_type,
-                                 String repository_status) {
+                                 String repository_status,
+                                 String solution_repository_git_url
+    ) {
         try (Connection conn = sql2o.beginTransaction()) {
             UUID repositoryUuid = uuidGenerator.generate();
-            conn.createQuery("insert into repositories(repository_uuid, repository_name, repository_description, repository_visibility, repository_git_url, repository_github_type, repository_type, repository_status, created_at) " +
-                    "VALUES (:repository_uuid, :repository_name, :repository_description, :repository_visibility, :repository_git_url, :repository_github_type, :repository_type, :repository_status, :created_at)")
+            conn.createQuery("insert into repositories(repository_uuid, user_uuid, organization_uuid, repository_name, repository_description, repository_visibility, repository_git_url, repository_github_type, repository_type, repository_status, solution_repository_git_url, created_at) " +
+                    "VALUES (:repository_uuid, :user_uuid, :organization_uuid, :repository_name, :repository_description, :repository_visibility, :repository_git_url, :repository_github_type, :repository_type, :repository_status, :solution_repository_git_url, :created_at)")
                     .addParameter("repository_uuid", repositoryUuid)
+                    .addParameter("user_uuid", user_uuid)
+                    .addParameter("organization_uuid", organization_uuid)
                     .addParameter("repository_name", repository_name)
                     .addParameter("repository_description", repository_description)
                     .addParameter("repository_visibility", repository_visibility)
@@ -166,6 +173,7 @@ public class Sql2oModel implements Model {
                     .addParameter("repository_github_type", repository_github_type)
                     .addParameter("repository_type", repository_type)
                     .addParameter("repository_status", repository_status)
+                    .addParameter("solution_repository_git_url", solution_repository_git_url )
                     .addParameter("created_at", new Date())
                     .executeUpdate();
             conn.commit();
@@ -248,6 +256,7 @@ public class Sql2oModel implements Model {
                     .addParameter("repository_github_type", repository.getRepository_github_type())
                     .addParameter("repository_type", repository.getRepository_type())
                     .addParameter("repository_status", repository.getRepository_status())
+                    .addParameter("solution_repository_git_url", repository.getSolution_repository_git_url())
                     .executeUpdate();
         }
     }
@@ -266,15 +275,18 @@ public class Sql2oModel implements Model {
      **/
     @Override
     public UUID createOrganization(String organization_name,
+                                   String company_name,
                                    String organization_description,
                                    int repository_count,
                                    String organization_git_url,
-                                   String organization_github_type) {
+                                   String organization_github_type
+                                   ) {
         try (Connection conn = sql2o.beginTransaction()) {
             UUID organizationUuid = uuidGenerator.generate();
-            conn.createQuery("insert into organizations(organization_uuid, organization_name, organization_description, repository_count, organization_git_url, organization_github_type, created_at) " +
-                    "VALUES (:organization_uuid, :organization_name, :organization_description, :repository_count, :organization_git_url, :organization_github_type, :created_at)")
+            conn.createQuery("insert into organizations(organization_uuid, organization_name, company_name, organization_description, repository_count, organization_git_url, organization_github_type, created_at) " +
+                    "VALUES (:organization_uuid, :organization_name, :company_name, :organization_description, :repository_count, :organization_git_url, :organization_github_type, :created_at)")
                     .addParameter("organization_uuid", organizationUuid)
+                    .addParameter("company_name", company_name)
                     .addParameter("organization_name", organization_name)
                     .addParameter("organization_description", organization_description)
                     .addParameter("repository_count", repository_count)
@@ -325,6 +337,15 @@ public class Sql2oModel implements Model {
             return getOrganization(organizations);
         }
     }
+    @Override
+    public Optional<Organization>  getOrganizationbyName(String organization_name){
+        try (Connection conn = sql2o.open()) {
+            List<Organization> organizations = conn.createQuery("SELECT * FROM organizations WHERE organization_name=:organization_name")
+                    .addParameter("organization_name", organization_name)
+                    .executeAndFetch(Organization.class);
+            return getOrganization(organizations);
+        }
+    }
 
     @NotNull
     private Optional<Organization> getOrganization(List<Organization> organizations) {
@@ -340,12 +361,13 @@ public class Sql2oModel implements Model {
     @Override
     public void updateOrganization(Organization organization) {
         try (Connection conn = sql2o.open()) {
-            conn.createQuery("update organizations set organization_name=:organization_name, " +
+            conn.createQuery("update organizations set organization_name=:organization_name, company_name=:company_name " +
                     "organization_description=:organization_description, repository_count=:repository_count," +
                     "organization_git_url=:organization_git_url, organization_github_type=:organization_github_type" +
                     " where organization_uuid=:organization_uuid")
                     .addParameter("organization_uuid", organization.getOrganization_uuid())
                     .addParameter("organization_name", organization.getOrganization_name())
+                    .addParameter("company_name", organization.getCompany_name())
                     .addParameter("organization_description", organization.getOrganization_description())
                     .addParameter("repository_count", organization.getRepository_count())
                     .addParameter("organization_git_url", organization.getOrganization_git_url())

@@ -12,6 +12,7 @@ public class NewRepositoryPayload implements Validable {
     String repository_github_type;
     String repository_type;
     String repository_status;
+    String solution_repository_git_url;
 
     public boolean isValid() {
         return repository_name != null && !repository_name.isEmpty()

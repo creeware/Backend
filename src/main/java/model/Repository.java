@@ -16,6 +16,7 @@ public class Repository {
     String repository_github_type;
     String repository_type;
     String repository_status;
+    String solution_repository_git_url;
     Date repository_submission_date;
     Date created_at;
     Date updated_at;
