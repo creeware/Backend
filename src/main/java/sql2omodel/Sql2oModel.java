@@ -295,7 +295,9 @@ public class Sql2oModel implements Model {
      * Organization
      **/
     @Override
-    public UUID createOrganization(String organization_name,
+    public UUID createOrganization(
+                                   UUID user_uuid,
+                                   String organization_name,
                                    String company_name,
                                    String organization_description,
                                    int repository_count,
@@ -304,9 +306,10 @@ public class Sql2oModel implements Model {
                                    ) {
         try (Connection conn = sql2o.beginTransaction()) {
             UUID organizationUuid = uuidGenerator.generate();
-            conn.createQuery("insert into organizations(organization_uuid, organization_name, company_name, organization_description, repository_count, organization_git_url, organization_github_type, created_at) " +
-                    "VALUES (:organization_uuid, :organization_name, :company_name, :organization_description, :repository_count, :organization_git_url, :organization_github_type, :created_at)")
+            conn.createQuery("insert into organizations(organization_uuid, user_uuid, organization_name, company_name, organization_description, repository_count, organization_git_url, organization_github_type, created_at) " +
+                    "VALUES (:organization_uuid, :user_uuid, :organization_name, :company_name, :organization_description, :repository_count, :organization_git_url, :organization_github_type, :created_at)")
                     .addParameter("organization_uuid", organizationUuid)
+                    .addParameter("user_uuid", user_uuid)
                     .addParameter("company_name", company_name)
                     .addParameter("organization_name", organization_name)
                     .addParameter("organization_description", organization_description)
@@ -382,10 +385,10 @@ public class Sql2oModel implements Model {
     @Override
     public void updateOrganization(Organization organization) {
         try (Connection conn = sql2o.open()) {
-            conn.createQuery("update organizations set organization_name=:organization_name, company_name=:company_name " +
+            conn.createQuery("update organizations set organization_name=:organization_name, company_name=:company_name, " +
                     "organization_description=:organization_description, repository_count=:repository_count," +
-                    "organization_git_url=:organization_git_url, organization_github_type=:organization_github_type" +
-                    " where organization_uuid=:organization_uuid")
+                    "organization_git_url=:organization_git_url, organization_github_type=:organization_github_type, updated_at=:updated_at " +
+                    "where organization_uuid=:organization_uuid")
                     .addParameter("organization_uuid", organization.getOrganization_uuid())
                     .addParameter("organization_name", organization.getOrganization_name())
                     .addParameter("company_name", organization.getCompany_name())
@@ -393,6 +396,7 @@ public class Sql2oModel implements Model {
                     .addParameter("repository_count", organization.getRepository_count())
                     .addParameter("organization_git_url", organization.getOrganization_git_url())
                     .addParameter("organization_github_type", organization.getOrganization_github_type())
+                    .addParameter("updated_at", new Date())
                     .executeUpdate();
         }
     }
@@ -404,7 +408,7 @@ public class Sql2oModel implements Model {
                     .addParameter("organization_uuid", uuid)
                     .executeUpdate();
             return "200";
-        } catch (Exception e){
+        } catch (Exception e) {
             return "400";
         }
     }

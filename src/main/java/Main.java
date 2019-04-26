@@ -1,6 +1,7 @@
 import authentication.AuthenticationController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controller.GithubController;
+import crud.CrudOrganization;
 import handlers.NewUserPayload;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.Model;
@@ -33,7 +34,7 @@ public class Main {
 
 
         Model model = new Sql2oModel(sql2o);
-
+        
         // insert a user (using HTTP post method)
         post("/users", (request, response) -> {
             ObjectMapper mapper = new ObjectMapper();
@@ -56,6 +57,7 @@ public class Main {
             return id;
         });
 
+
         post("/api/repositories", (request, response) -> CrudRepository.insertRepo(request, response));
 
         delete("/api/repositories/:uuid", "application/json", (request, response) ->
@@ -65,6 +67,20 @@ public class Main {
 
         get("/api/repositories/:uuid", "application/json", (request, response) ->
                 model.getRepository(UUID.fromString(request.params(":uuid"))), new JsonTransformer());
+
+
+        
+
+        post("/api/organizations", (request, response) -> CrudOrganization.insertOrg(request, response, model));
+
+
+        delete("/api/organizations/:uuid",  (request, response) ->
+                model.deleteOrganization(UUID.fromString(request.params(":uuid"))));
+
+        patch("/api/organizations", (request, response) -> CrudOrganization.updateOrg(request, response, model));
+
+        get("/api/organizations/:uuid", "application/json", (request, response) ->
+                model.getOrganization(UUID.fromString(request.params(":uuid"))), new JsonTransformer());
 
 
         before(Web.LOGIN, AuthenticationController.serveLoginPage());

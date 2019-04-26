@@ -26,7 +26,9 @@ public interface Model {
                           String solution_repository_git_url
     );
 
-    UUID createOrganization(String organization_name,
+    UUID createOrganization(
+                            UUID user_uuid,
+                            String organization_name,
                             String company_name,
                             String organization_description,
                             int repository_count,
