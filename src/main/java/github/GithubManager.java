@@ -30,7 +30,8 @@ public class GithubManager {
 
     public static void main (String[] args) throws IOException {}
 
-    public static void createRepository(String access_token, String org_name, String[] user_names, String template_repo_name, String solution_repo_url) throws IOException{
+    public static String createRepository(String access_token, String org_name, String[] user_names, String template_repo_name, String solution_repo_url) throws IOException{
+        System.out.println(org_name);
         RepositoryService service = new RepositoryService();
         service.getClient().setOAuth2Token(access_token);
         for(String user_name:user_names){
@@ -44,6 +45,7 @@ public class GithubManager {
             clone_and_push(access_token, org_name, repo_name, template_repo_name);
             putRepositoryToDb(repository, user_name, org_name, solution_repo_url);
         }
+        return "success";
     }
 
     public static void putRepositoryToDb(Repository repository, String user_name, String org_name, String solution_repo_url){

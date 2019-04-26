@@ -69,7 +69,7 @@ public interface Model {
 
     void updateOrganization(Organization organization);
 
-    void deleteUser(UUID uuid);
-    void deleteRepository(UUID uuid);
-    void deleteOrganization(UUID uuid);
+    String deleteUser(UUID uuid);
+    String deleteRepository(UUID uuid);
+    String deleteOrganization(UUID uuid);
 }

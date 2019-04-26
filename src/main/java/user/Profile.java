@@ -16,7 +16,7 @@ import java.util.UUID;
 
 
 public class Profile {
-    private CommonProfile profile;
+    public CommonProfile profile;
     private Model model;
 
     public Profile(final Request request, final Response response) {

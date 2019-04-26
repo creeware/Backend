@@ -1,9 +1,5 @@
 import authentication.AuthenticationController;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import controller.GithubController;
 import handlers.NewUserPayload;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -13,10 +9,9 @@ import sql2omodel.Sql2oModel;
 import user.Profile;
 import util.JsonTransformer;
 import util.Path.*;
+import crud.CrudRepository;
 import java.net.URI;
-import java.util.Map;
 import java.util.UUID;
-
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static user.ProfileController.getProfile;
 import static spark.Spark.*;
@@ -25,6 +20,7 @@ import static spark.Spark.*;
 public class Main {
     private static URI dbUri;
     public static Sql2o sql2o;
+
 
     public static void main(String[] args) {
         port(getHerokuAssignedPort());
@@ -59,6 +55,17 @@ public class Main {
             response.type("application/json");
             return id;
         });
+
+        post("/api/repositories", (request, response) -> CrudRepository.insertRepo(request, response));
+
+        delete("/api/repositories/:uuid", "application/json", (request, response) ->
+                model.deleteRepository(UUID.fromString(request.params(":uuid"))));
+
+        patch("/api/repositories", (request, response) -> CrudRepository.updateRepo(request, response, model));
+
+        get("/api/repositories/:uuid", "application/json", (request, response) ->
+                model.getRepository(UUID.fromString(request.params(":uuid"))), new JsonTransformer());
+
 
         before(Web.LOGIN, AuthenticationController.serveLoginPage());
         before("/api", (req, res) -> AuthenticationController.ensureUserIsLoggedIn(req, res));
