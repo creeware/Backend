@@ -3,8 +3,11 @@ package handlers;
 import lombok.Data;
 import util.Validable;
 
+import java.util.UUID;
+
 @Data
 public class NewOrganizationPayload implements Validable {
+    UUID user_uuid;
     String organization_name;
     String organization_description;
     String company_name;
