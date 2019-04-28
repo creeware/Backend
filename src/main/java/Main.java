@@ -5,13 +5,17 @@ import crud.CrudOrganization;
 import handlers.NewUserPayload;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.Model;
+import model.User;
+import org.hibernate.Session;
 import org.sql2o.*;
 import sql2omodel.Sql2oModel;
 import user.Profile;
+import util.HibernateUtil;
 import util.JsonTransformer;
 import util.Path.*;
 import crud.CrudRepository;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static user.ProfileController.getProfile;
@@ -35,29 +39,6 @@ public class Main {
 
 
         Model model = new Sql2oModel(sql2o);
-        
-        // insert a user (using HTTP post method)
-        post("/users", (request, response) -> {
-            ObjectMapper mapper = new ObjectMapper();
-            NewUserPayload creation = mapper.readValue(request.body(), NewUserPayload.class);
-            if (!creation.isValid()) {
-                response.status(HTTP_BAD_REQUEST);
-                return "";
-            }
-            UUID id = model.createUser(
-                    creation.getUser_display_name(),
-                    creation.getUsername(),
-                    creation.getUser_email(),
-                    creation.getUser_client(),
-                    creation.getAvatar_url(),
-                    creation.getProfile_url(),
-                    creation.getUser_role(),
-                    creation.getUser_location());
-            response.status(200);
-            response.type("application/json");
-            return id;
-        });
-
 
         post("/api/repositories", (request, response) -> CrudRepository.insertRepo(request, response));
 

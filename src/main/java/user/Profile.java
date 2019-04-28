@@ -4,13 +4,17 @@ import email.WelcomeEmail;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.Model;
 import model.User;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.sparkjava.SparkWebContext;
 import org.sql2o.Sql2o;
 import spark.*;
 import sql2omodel.Sql2oModel;
+import util.HibernateUtil;
 
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,20 +35,34 @@ public class Profile {
     }
 
     public UUID createUser(){
-        if(!model.existUserByNameAndClient(profile.getUsername(), profile.getClientName())){
-            UUID id = model.createUser(
-                    profile.getDisplayName(),
-                    profile.getUsername(),
-                    profile.getEmail(),
-                    profile.getClientName(),
-                    profile.getPictureUrl().toString(),
-                    profile.getProfileUrl().toString(),
-                    "user",
-                    profile.getLocation());
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        try {
+            if (session.createQuery("from User where username=:username AND user_client=:user_client", User.class)
+                    .setParameter("username", profile.getUsername())
+                    .setParameter("user_client", profile.getClientName())
+                    .uniqueResult() == null){
+                User user = new User();
+                user.setUser_display_name(profile.getDisplayName());
+                user.setUsername(profile.getUsername());
+                user.setUser_email(profile.getEmail());
+                user.setUser_client(profile.getClientName());
+                user.setAvatar_url(profile.getPictureUrl().toString());
+                user.setProfile_url(profile.getProfileUrl().toString());
+                user.setUser_role("user");
+                user.setUser_location(profile.getLocation());
+                user.setCreated_at(new Date());
+                user.setUser_uuid(UUID.randomUUID());
 
+                Transaction transaction = session.beginTransaction();
+                session.persist(user);
+                session.flush();
+                transaction.commit();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
             WelcomeEmail.main(profile.getEmail());
-
-            return id;
+            session.close();
         }
         return null;
     }
