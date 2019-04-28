@@ -10,7 +10,6 @@ public class HibernateUtil {
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
                 Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
-                System.out.println(dotenv.get("JDBC_DATABASE_USERNAME"));
                 Configuration cfg = new Configuration().configure("hibernate.cfg.xml")
                                         .setProperty("hibernate.connection.url", dotenv.get("JDBC_DATABASE_URL"))
                                         .setProperty("hibernate.connection.username", dotenv.get("JDBC_DATABASE_USERNAME") )

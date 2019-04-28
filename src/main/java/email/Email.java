@@ -6,8 +6,9 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import io.github.cdimascio.dotenv.Dotenv;
-import org.sql2o.Sql2o;
-import sql2omodel.Sql2oModel;
+import model.User;
+import org.hibernate.Session;
+import util.HibernateUtil;
 
 import javax.ws.rs.core.MediaType;
 import java.util.InvalidPropertiesFormatException;
@@ -16,24 +17,23 @@ import java.util.UUID;
 public abstract class Email {
 
     public static final String SENDER_MAIL = "noreply@" + Dotenv.load().get("MAILGUN_DOMAIN");
-    private final Sql2oModel sql;
 
     public Email() {
-        String host = Dotenv.load().get("JDBC_DATABASE_URL", "localhost");
-        String user = Dotenv.load().get("JDBC_DATABASE_USERNAME", "root");
-        String pass = Dotenv.load().get("JDBC_DATABASE_PASSWORD", "");
-        this.sql = new Sql2oModel(new Sql2o(
-                host,
-                user,
-                pass
-        ));
     }
 
-    public String getUserMail(UUID user) throws InvalidPropertiesFormatException {
-        if (!(sql.existUser(user) && sql.getUser(user).isPresent())) {
-            throw new InvalidPropertiesFormatException(user.toString() + " does not exist.");
+    public String getUserMail(UUID userUUID){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        User user = new User();
+        try {
+            user = session.createQuery("from User where user_uuid=:user_uuid", User.class)
+                    .setParameter("user_uuid", userUUID)
+                    .uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+            return user.getUser_email();
         }
-        return sql.getUser(user).get().getUser_email();
     }
 
     protected ClientResponse sendMail(String recipient, String subject, String body) {
@@ -53,35 +53,6 @@ public abstract class Email {
 
     public abstract ClientResponse sendMail();
 
-    public static void main(String[] args) throws InvalidPropertiesFormatException {
-        Email email = new Email() {
-            @Override
-            public ClientResponse sendMail() {
-                return null;
-            }
-        };
-
-        email.sendMail("pontus.asp@gmail.com", "Testlel",
-                "<html>HTML "+
-                        "<div class='cool'>" +
-                        "<b>Test</b>" +
-                        "</div>" +
-                        "</html>"
-                );
-
-        UUID user = email.sql.createUser("Pontus Asp",
-                "pontusasp",
-                "pontus.asp@gmail.com",
-                "pontusasp",
-                "https://avatars2.githubusercontent.com/u/18573650?s=460&v=4",
-                "https://github.com/pontusasp",
-                "student",
-                "Sweden");
-
-        String mail = email.getUserMail(user);
-        email.sql.deleteUser(user);
-
-        System.out.println(mail);
-    }
+    public static void main(String[] args) throws InvalidPropertiesFormatException { }
 
 }

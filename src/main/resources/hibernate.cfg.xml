@@ -26,6 +26,8 @@
 
     <!-- The mapping information of entities -->
     <mapping class="model.User" />
+    <mapping class="model.Repository" />
+    <mapping class="model.Organization" />
 
 
 </session-factory>

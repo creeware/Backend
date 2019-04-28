@@ -1,4 +1,4 @@
-package handlers;
+package payload;
 
 import lombok.Data;
 import util.Validable;

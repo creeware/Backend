@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import email.FailEmail;
 import email.SuccessEmail;
-import model.Model;
 import model.Repository;
 import spark.Request;
 import spark.Response;
@@ -15,28 +14,29 @@ import static diffing.Diffing.diffRepositories;
 
 public class GithubController {
 
-    public static String payloadHandler(Request req, Response res, Model model) throws InvalidPropertiesFormatException {
+    public static String payloadHandler(Request req, Response res) throws InvalidPropertiesFormatException {
         JsonParser jsonParser = new JsonParser();
         JsonObject payload = jsonParser.parse(req.body()).getAsJsonObject();
         String repo_name = payload.get("repository").getAsJsonObject().get("name").getAsString();
-        System.out.println(repo_name);
-        Repository repository = model.getRepositoryByName(repo_name).get();
+        Repository repository = Repository.getRepository(repo_name);
+
         String result = diffRepositories(repository.getRepository_git_url(), repository.getSolution_repository_git_url());
 
         if (checkResult(result)){
             repository.setRepository_status("Success");
-            model.updateRepository(repository);
+            Repository.updateRepository(repository);
 
             SuccessEmail email = new SuccessEmail(repository.getUser_uuid(), repo_name);
             email.sendMail();
         }
         else {
             repository.setRepository_status("Fail");
-            model.updateRepository(repository);
+            Repository.updateRepository(repository);
             FailEmail email = new FailEmail(repository.getUser_uuid(), repo_name, result);
             email.sendMail();
         }
 
+        res.status(200);
         return "payload processed";
     }
 

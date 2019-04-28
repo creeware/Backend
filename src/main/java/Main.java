@@ -1,26 +1,15 @@
-import authentication.AuthenticationController;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import controller.AuthenticationController;
 import controller.GithubController;
-import crud.CrudOrganization;
-import handlers.NewUserPayload;
-import io.github.cdimascio.dotenv.Dotenv;
-import model.Model;
-import model.User;
-import org.hibernate.Session;
+import controller.OrganizationController;
 import org.sql2o.*;
-import sql2omodel.Sql2oModel;
-import user.Profile;
-import util.HibernateUtil;
 import util.JsonTransformer;
 import util.Path.*;
-import crud.CrudRepository;
+import controller.RepositoryController;
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static user.ProfileController.getProfile;
+
+import static controller.UserController.createAndGetProfile;
 import static spark.Spark.*;
-import static user.ProfileController.handleLogin;
 
 
 public class Main {
@@ -31,61 +20,45 @@ public class Main {
     public static void main(String[] args) {
         port(getHerokuAssignedPort());
 
-        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
-
-
-
-        sql2o = new Sql2o(dotenv.get("JDBC_DATABASE_URL"), dotenv.get("JDBC_DATABASE_USERNAME"), dotenv.get("JDBC_DATABASE_PASSWORD"));
-
-
-        Model model = new Sql2oModel(sql2o);
-
-        post("/api/repositories", (request, response) -> CrudRepository.insertRepo(request, response));
-
-        delete("/api/repositories/:uuid", "application/json", (request, response) ->
-                model.deleteRepository(UUID.fromString(request.params(":uuid"))));
-
-        patch("/api/repositories", (request, response) -> CrudRepository.updateRepo(request, response, model));
-
-        get("/api/repositories/:uuid", "application/json", (request, response) ->
-                model.getRepository(UUID.fromString(request.params(":uuid"))), new JsonTransformer());
-
-
-        
-
-        post("/api/organizations", (request, response) -> CrudOrganization.insertOrg(request, response, model));
-
-
-        delete("/api/organizations/:uuid",  (request, response) ->
-                model.deleteOrganization(UUID.fromString(request.params(":uuid"))));
-
-        patch("/api/organizations", (request, response) -> CrudOrganization.updateOrg(request, response, model));
-
-        get("/api/organizations/:uuid", "application/json", (request, response) ->
-                model.getOrganization(UUID.fromString(request.params(":uuid"))), new JsonTransformer());
-
 
         before(Web.LOGIN, AuthenticationController.serveLoginPage());
-        before("/api", (req, res) -> AuthenticationController.ensureUserIsLoggedIn(req, res));
-        before("/api/*", (req, res) -> AuthenticationController.ensureUserIsLoggedIn(req, res));
+        get(Web.LOGIN,(req,res) -> AuthenticationController.login.handle(req, res) );
+        post(Web.LOGIN,(req,res) -> createAndGetProfile.handle(req, res) );
 
-        get(Web.LOGIN,(req,res) -> handleLogin.handle(req, res) );
-        post(Web.LOGIN,(req,res) -> getProfile.handle(req, res) );
-        redirect.get("/", "/api");
+        post(Web.LOGOUT,(req,res) ->  AuthenticationController.logout().handle(req, res));
 
-        get(Web.API, (req,res) -> "hello world");
-        post("/hook_payload", "*/*", (req, res) -> {
-            String result = GithubController.payloadHandler(req, res, model);
-            return result;
+
+        path(Web.API, () -> {
+            before("/*", AuthenticationController::ensureUserIsLoggedIn);
+
+            path(Web.REPOSITORIES, () -> {
+                post("", RepositoryController::insertRepository);
+                delete("/:uuid", "application/json", (request, response) ->
+                        RepositoryController.deleteRepository(UUID.fromString(request.params(":uuid")), response));
+                patch("", RepositoryController::updateRepository);
+                get("/:uuid", "application/json", (request, response) ->
+                        RepositoryController.getRepository(UUID.fromString(request.params(":uuid")), response), new JsonTransformer());
+            });
+
+
+            path(Web.ORGANIZATIONS, () -> {
+                post("", OrganizationController::insertOrganization);
+                delete(":uuid",  (request, response) ->
+                        OrganizationController.deleteOrganization(UUID.fromString(request.params(":uuid")), response));
+                patch("", OrganizationController::updateOrganization);
+                get("/:uuid", "application/json", (request, response) ->
+                        OrganizationController.getOrganization(UUID.fromString(request.params(":uuid")), response), new JsonTransformer());
+            });
         });
-        after(Web.LOGIN, (request, response) -> {
-            Profile user = new Profile(request, response);
-            user.createUser();
+
+
+        post(Web.WEBHOOK, "*/*", (req, res) -> {
+            String result = GithubController.payloadHandler(req, res);
+            return result;
         });
 
         get(Web.CALLBACK,(req,res) ->  AuthenticationController.callback().handle(req, res));
         post(Web.CALLBACK,(req,res) ->  AuthenticationController.callback().handle(req, res));
-        post(Web.LOGOUT,(req,res) ->  AuthenticationController.logout().handle(req, res));
     }
 
     static private int getHerokuAssignedPort() {

@@ -16,7 +16,7 @@ public class SuccessEmail extends Email {
             to = getUserMail(recipient);
             subject = String.format("Your submission %s has been graded.", task);
             body = String.format("You passed %s.", task);
-        } catch (InvalidPropertiesFormatException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
