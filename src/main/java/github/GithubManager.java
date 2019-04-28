@@ -11,8 +11,11 @@ import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.service.CollaboratorService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.sql2o.Sql2o;
 import sql2omodel.Sql2oModel;
@@ -21,10 +24,7 @@ import sql2omodel.Sql2oModel;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class GithubManager {
 
@@ -97,9 +97,17 @@ public class GithubManager {
             File folder = new File(template_repo_name);
             Git git = Git.cloneRepository()
                     .setURI( templateRemoteUrl )
+                    .setCloneAllBranches(true)
                     .setDirectory(folder)
                     .call();
-            git.push().setRemote( remoteUrl ).setCredentialsProvider( credentialsProvider ).call();
+
+            List<Ref> call = git.branchList().setListMode(ListBranchCommand.ListMode.REMOTE).call();
+
+            for (Ref ref : call) {
+                git.checkout().setForced(true).setName(ref.getName()).call();
+                git.push().setRemote( remoteUrl ).setRefSpecs(new RefSpec(ref.getName() + ":" + ref.getName().replaceAll("refs/remotes/origin/", "refs/heads/"))).setForce(true).setCredentialsProvider( credentialsProvider ).call();
+            }
+
             deleteDir(folder);
         } catch (GitAPIException e) {
             e.printStackTrace();
