@@ -16,6 +16,7 @@ import java.util.UUID;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static user.ProfileController.getProfile;
 import static spark.Spark.*;
+import static user.ProfileController.handleLogin;
 
 
 public class Main {
@@ -87,11 +88,11 @@ public class Main {
         before("/api", (req, res) -> AuthenticationController.ensureUserIsLoggedIn(req, res));
         before("/api/*", (req, res) -> AuthenticationController.ensureUserIsLoggedIn(req, res));
 
-        redirect.get(Web.LOGIN, "/api/user_profile");
+        get(Web.LOGIN,(req,res) -> handleLogin.handle(req, res) );
+        post(Web.LOGIN,(req,res) -> getProfile.handle(req, res) );
         redirect.get("/", "/api");
 
         get(Web.API, (req,res) -> "hello world");
-        get(Web.USER_PROFILE, "application/json", (req,res) -> getProfile.handle(req, res), new JsonTransformer());
         post("/hook_payload", "*/*", (req, res) -> {
             String result = GithubController.payloadHandler(req, res, model);
             return result;
