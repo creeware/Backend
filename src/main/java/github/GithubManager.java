@@ -97,6 +97,7 @@ public class GithubManager {
 
 
     public static void inviteMember(String access_token, Repository repository, String user_name) throws IOException{
+        System.out.println(user_name);
         CollaboratorService c_service = new CollaboratorService();
         c_service.getClient().setOAuth2Token(access_token);
         c_service.addCollaborator(repository, user_name);

@@ -8,7 +8,7 @@ import static util.Directory.deleteDirectory;
 public class Diffing {
 
     public static String diffRepositories(String userURL, String solutionURL){
-        String folder = userURL.split("/")[4];
+        String folder = userURL.split("/")[4].replaceAll(".git", "");
         String[] cmd = {
                 "/bin/bash",
                 "-c",
