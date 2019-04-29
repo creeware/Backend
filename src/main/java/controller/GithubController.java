@@ -42,10 +42,11 @@ public class GithubController {
 
     private static boolean checkResult(String result){
         for (String line: result.split("\n")) {
-            if (line.charAt(0) == '+' || line.charAt(0) == '-' )
-                return false;
+            if(line.length() > 0) {
+                if (line.charAt(0) == '+' || line.charAt(0) == '-')
+                    return false;
+            }
         }
-
         return true;
     }
 }
