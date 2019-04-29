@@ -41,11 +41,11 @@ public class Profile {
                 session.persist(user);
                 session.flush();
                 transaction.commit();
+                // WelcomeEmail.main(profile.getEmail());
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            WelcomeEmail.main(profile.getEmail());
             session.close();
         }
         return null;
