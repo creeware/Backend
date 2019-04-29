@@ -3,6 +3,8 @@ package diffing;
 import java.io.*;
 import java.nio.file.Files;
 
+import static util.Directory.deleteDirectory;
+
 public class Diffing {
 
     public static String diffRepositories(String userURL, String solutionURL){
@@ -21,7 +23,7 @@ public class Diffing {
 
         String result = executeCommand(cmd);
 
-        deleteDir(new File(folder));
+        deleteDirectory(new File(folder));
 
         return result;
     }
@@ -45,17 +47,5 @@ public class Diffing {
             System.err.println(ex.toString());
         }
         return  result;
-    }
-
-    private static void deleteDir(File file) {
-        File[] contents = file.listFiles();
-        if (contents != null) {
-            for (File f : contents) {
-                if (! Files.isSymbolicLink(f.toPath())) {
-                    deleteDir(f);
-                }
-            }
-        }
-        file.delete();
     }
 }

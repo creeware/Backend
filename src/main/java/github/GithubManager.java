@@ -3,7 +3,6 @@ package github;
 
 
 import io.github.cdimascio.dotenv.Dotenv;
-import model.Model;
 import model.Organization;
 import model.User;
 import org.eclipse.egit.github.core.Repository;
@@ -17,21 +16,22 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
-import org.sql2o.Sql2o;
-import sql2omodel.Sql2oModel;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import util.HibernateUtil;
 
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
+
+import static util.Directory.deleteDirectory;
 
 public class GithubManager {
 
     public static void main (String[] args) throws IOException {}
 
     public static String createRepository(String access_token, String org_name, String[] user_names, String template_repo_name, String solution_repo_url) throws IOException{
-        System.out.println(org_name);
         RepositoryService service = new RepositoryService();
         service.getClient().setOAuth2Token(access_token);
         for(String user_name:user_names){
@@ -49,23 +49,36 @@ public class GithubManager {
     }
 
     public static void putRepositoryToDb(Repository repository, String user_name, String org_name, String solution_repo_url){
-        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
-        Sql2o sql2o = new Sql2o(dotenv.get("JDBC_DATABASE_URL"), dotenv.get("JDBC_DATABASE_USERNAME"), dotenv.get("JDBC_DATABASE_PASSWORD"));
-        Model model = new Sql2oModel(sql2o);
-        Optional<User> user = model.getUserByNameAndClient(user_name, "GitHubClient");
-        Optional<Organization> organization = model.getOrganizationbyName(org_name);
-        model.createRepository(
-                user.get().getUser_uuid(),
-                organization.get().getOrganization_uuid(),
-                repository.getName(),
-                repository.getDescription(),
-                Boolean.toString(repository.isPrivate()),
-                repository.getCloneUrl(),
-                repository.getDefaultBranch(),
-                "challenge",
-                "unsolved",
-                solution_repo_url
-        );
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        User user = User.getUser(user_name, "GitHubClient");
+        Organization organization = Organization.getOrganization(org_name);
+        model.Repository newRepository = new model.Repository();
+
+        newRepository.setRepository_uuid(UUID.randomUUID());
+        newRepository.setUser_uuid(user.getUser_uuid());
+        newRepository.setOrganization_uuid(organization.getOrganization_uuid());
+        newRepository.setRepository_name(repository.getName());
+        newRepository.setRepository_description(repository.getDescription());
+        newRepository.setRepository_visibility(Boolean.toString(repository.isPrivate()));
+        newRepository.setRepository_git_url(repository.getCloneUrl());
+        newRepository.setRepository_github_type(repository.getDefaultBranch());
+        newRepository.setRepository_type("challenge");
+        newRepository.setRepository_status("unsolved");
+        newRepository.setSolution_repository_git_url(solution_repo_url);
+        newRepository.setCreated_at(new Date());
+
+        Transaction transaction = session.beginTransaction();
+        session.persist(newRepository);
+        session.flush();
+        transaction.commit();
+
+        try {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
     }
 
 
@@ -108,21 +121,9 @@ public class GithubManager {
                 git.push().setRemote( remoteUrl ).setRefSpecs(new RefSpec(ref.getName() + ":" + ref.getName().replaceAll("refs/remotes/origin/", "refs/heads/"))).setForce(true).setCredentialsProvider( credentialsProvider ).call();
             }
 
-            deleteDir(folder);
+            deleteDirectory(folder);
         } catch (GitAPIException e) {
             e.printStackTrace();
         }
-    }
-
-    private static void deleteDir(File file) {
-        File[] contents = file.listFiles();
-        if (contents != null) {
-            for (File f : contents) {
-                if (! Files.isSymbolicLink(f.toPath())) {
-                    deleteDir(f);
-                }
-            }
-        }
-        file.delete();
     }
 }

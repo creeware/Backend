@@ -6,6 +6,9 @@ public class Path {
         public static final String LOGIN = "/authentication";
         public static final String LOGOUT = "/logout";
         public static final String CALLBACK = "/callback";
+        public static final String WEBHOOK = "/hook_payload";
+        public static final String REPOSITORIES = "/repositories";
+        public static final String ORGANIZATIONS = "/organizations";
         public static final String API = "/api";
         public static final String USER_PROFILE = "/api/user_profile";
     }
