@@ -28,8 +28,6 @@ public class AppConfigFactory {
 
         final Config config = new Config(clients);
 
-        config.addAuthorizer("admin", new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
-        config.addMatcher("excludedPath", new PathMatcher().excludeRegex("^/*/notprotected$"));
         config.setHttpActionAdapter(new DefaultHttpActionAdapter());
 
         return config;

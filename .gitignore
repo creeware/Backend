@@ -328,4 +328,8 @@ local.properties
 
 .sts4-cache/
 
+# deployment keys
+.travis/*.key
+.travis/*.key.pub
+
 

@@ -1,23 +1,27 @@
 language: java
-# use Java 8
 jdk:
-  - oraclejdk8
-# see https://blog.travis-ci.com/2014-12-17-faster-builds-with-container-based-infrastructure
-sudo: false
-
-# cache the build tool's caches
+- oraclejdk8
+sudo: true
 cache:
   directories:
-    - $HOME/.m2
-
-# Code Coverage
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
-
-
-deploy:
-  provider: heroku
-  api_key: $HEROKU_API_KEY
-  app:
-    develop: powerline-backend-staging
-    master: powerline-backend-production
+  - "$HOME/.m2"
+jobs:
+  include:
+  - stage: deploy
+    if: branch = develop
+    before_install:
+    - openssl aes-256-cbc -K $encrypted_fe0e858aa20d_key -iv $encrypted_fe0e858aa20d_iv
+      -in .travis/deploy.key.enc -out .travis/deploy.key -d
+    after_success:
+    - bash <(curl -s https://codecov.io/bash)
+    - chmod +x ./deploy.sh
+    - eval "$(ssh-agent -s)"
+    - chmod 600 .travis/deploy.key
+    - ssh-add .travis/deploy.key
+    - ssh-keyscan 157.230.114.141 >> ~/.ssh/known_hosts
+    - git remote add deploy dokku@157.230.114.141:app.git
+    - git config --global push.default simple
+    - git push -f deploy HEAD:refs/heads/master
+before_install:
+- openssl aes-256-cbc -K $encrypted_fe0e858aa20d_key -iv $encrypted_fe0e858aa20d_iv
+  -in deploy.key.enc -out deploy.key -d

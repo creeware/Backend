@@ -13,6 +13,8 @@ import spark.Response;
 import spark.Route;
 import util.JsonTransformer;
 
+import java.util.UUID;
+
 public class AuthenticationController {
     static Config config =  AppConfigFactory.build();
 
@@ -24,12 +26,17 @@ public class AuthenticationController {
         Profile user = new Profile(req, res);
         res.body(new JsonTransformer().render(user.profile.getAttributes()));
         res.header("Authorization", user.profile.getAttribute("access_token").toString());
-        res.redirect(req.queryParams("redirect_uri"));
+        if(req.queryParams("redirect_uri") != null){
+            res.redirect(req.queryParams("redirect_uri") +  "?code=" + UUID.randomUUID().toString());
+        } else {
+            res.redirect("https://creeware.com/auth/callback" +  "?code=" + UUID.randomUUID().toString());
+        }
+
         return res.body();
     };
 
     public static Route callback(){
-        return new CallbackRoute(config, "/" , false, true);
+        return new CallbackRoute(config, "https://creeware.com/auth/callback" +  "?code=" + UUID.randomUUID().toString() , false, true);
     }
 
     public static Route logout() {

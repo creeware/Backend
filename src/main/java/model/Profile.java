@@ -54,6 +54,12 @@ public class Profile {
     private java.util.Optional getProfile(final Request request, final Response response) {
         final SparkWebContext context = new SparkWebContext(request, response);
         final ProfileManager manager = new ProfileManager(context);
+        System.out.println(context.getSessionStore().toString());
+        System.out.println(context.getRequestCookies().toString());
+        System.out.println(request.attributes().toString());
+        System.out.println(request.headers().toString());
+        System.out.println(request.session().id());
+        System.out.println(manager.isAuthenticated());
         return manager.get(true);
     }
 

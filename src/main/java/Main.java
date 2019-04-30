@@ -1,6 +1,7 @@
 import controller.AuthenticationController;
 import controller.GithubController;
 import controller.OrganizationController;
+import org.pac4j.oauth.client.GitHubClient;
 import org.sql2o.*;
 import util.JsonTransformer;
 import util.Path.*;
@@ -23,10 +24,11 @@ public class Main {
 
         before(Web.LOGIN, AuthenticationController.serveLoginPage());
         get(Web.LOGIN,(req,res) -> AuthenticationController.login.handle(req, res) );
-        post(Web.LOGIN,(req,res) -> createAndGetProfile.handle(req, res) );
+
+        post(Web.AUTHORIZATION,(req,res) -> createAndGetProfile.handle(req, res) );
+        options(Web.AUTHORIZATION,(req,res) -> createAndGetProfile.handle(req, res) );
 
         post(Web.LOGOUT,(req,res) ->  AuthenticationController.logout().handle(req, res));
-
 
         path(Web.API, () -> {
             before("/*", AuthenticationController::ensureUserIsLoggedIn);
