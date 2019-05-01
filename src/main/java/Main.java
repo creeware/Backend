@@ -1,7 +1,6 @@
 import controller.AuthenticationController;
 import controller.GithubController;
 import controller.OrganizationController;
-import org.pac4j.oauth.client.GitHubClient;
 import org.sql2o.*;
 import util.JsonTransformer;
 import util.Path.*;
@@ -21,14 +20,7 @@ public class Main {
     public static void main(String[] args) {
         port(getHerokuAssignedPort());
 
-
-        before(Web.LOGIN, AuthenticationController.serveLoginPage());
-        get(Web.LOGIN,(req,res) -> AuthenticationController.login.handle(req, res) );
-
-        post(Web.AUTHORIZATION,(req,res) -> createAndGetProfile.handle(req, res) );
-        options(Web.AUTHORIZATION,(req,res) -> createAndGetProfile.handle(req, res) );
-
-        post(Web.LOGOUT,(req,res) ->  AuthenticationController.logout().handle(req, res));
+        // post(Web.LOGOUT,(req,res) ->  AuthenticationController.logout().handle(req, res));
 
         path(Web.API, () -> {
             before("/*", AuthenticationController::ensureUserIsLoggedIn);
@@ -53,14 +45,12 @@ public class Main {
             });
         });
 
-
         post(Web.WEBHOOK, "*/*", (req, res) -> {
             String result = GithubController.payloadHandler(req, res);
             return result;
         });
 
-        get(Web.CALLBACK,(req,res) ->  AuthenticationController.callback().handle(req, res));
-        post(Web.CALLBACK,(req,res) ->  AuthenticationController.callback().handle(req, res));
+        post("auth/github",(req,res) -> createAndGetProfile.handle(req, res));
     }
 
     static private int getHerokuAssignedPort() {
