@@ -31,7 +31,7 @@ public class GithubManager {
 
     public static void main (String[] args) throws IOException {}
 
-    public static String createRepository(String access_token, String org_name, String[] user_names, String template_repo_name, String solution_repo_url) throws IOException{
+    public static String createRepository(String access_token, String org_name, String[] user_names, String admin_user_name, String template_repo_name, String solution_repo_url, Date release_date) throws IOException{
         RepositoryService service = new RepositoryService();
         service.getClient().setOAuth2Token(access_token);
         for(String user_name:user_names){
@@ -40,17 +40,20 @@ public class GithubManager {
             Repository repository = new Repository();
             repository.setName(repo_name);
             repository = service.createRepository(org_name, repository);
-            service.createHook(repository, hook);
-            inviteMember(access_token, repository, user_name);
+            if(release_date.equals(new Date())){
+                inviteMember(access_token, repository, user_name);
+            }
             clone_and_push(access_token, org_name, repo_name, template_repo_name);
-            putRepositoryToDb(repository, user_name, org_name, solution_repo_url);
+            service.createHook(repository, hook);
+            putRepositoryToDb(repository, user_name, admin_user_name, org_name, solution_repo_url, release_date);
         }
         return "success";
     }
 
-    public static void putRepositoryToDb(Repository repository, String user_name, String org_name, String solution_repo_url){
+    public static void putRepositoryToDb(Repository repository, String user_name, String admin_user_name, String org_name, String solution_repo_url, Date release_date){
         Session session = HibernateUtil.getSessionFactory().openSession();
         User user = User.getUser(user_name, "GitHubClient");
+        User admin = User.getUser(admin_user_name, "GitHubClient");
         Organization organization = Organization.getOrganization(org_name);
         model.Repository newRepository = new model.Repository();
 
@@ -65,6 +68,9 @@ public class GithubManager {
         newRepository.setRepository_type("challenge");
         newRepository.setRepository_status("unsolved");
         newRepository.setSolution_repository_git_url(solution_repo_url);
+        newRepository.setRepository_admin_uuid(admin.getUser_uuid());
+        newRepository.setUser_name(user.getUsername());
+        newRepository.setRelease_date(release_date);
         newRepository.setCreated_at(new Date());
 
         Transaction transaction = session.beginTransaction();
@@ -97,7 +103,6 @@ public class GithubManager {
 
 
     public static void inviteMember(String access_token, Repository repository, String user_name) throws IOException{
-        System.out.println(user_name);
         CollaboratorService c_service = new CollaboratorService();
         c_service.getClient().setOAuth2Token(access_token);
         c_service.addCollaborator(repository, user_name);

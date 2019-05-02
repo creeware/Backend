@@ -13,19 +13,23 @@ import spark.Response;
 import util.HibernateUtil;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 public class RepositoryController {
     // insert a repository
-    public static String insertRepository(Request request, Response response) {
+    public static String insertRepository(Request request, Response response) throws ParseException {
         Gson googleJson = new Gson();
         JsonParser jsonParser = new JsonParser();
         JsonObject payload = jsonParser.parse(request.body()).getAsJsonObject();
 
-        User profile = User.getUser(payload.get("user_name").getAsString(), payload.get("client_name").getAsString());
+        User profile = User.getUser(payload.get("admin_user_name").getAsString(), payload.get("client_name").getAsString());
 
         String accessToken = String.valueOf(profile.getAccess_token());
 
+        Date release_date = new SimpleDateFormat("yyyy-MM-dd").parse(payload.get("release_date").getAsString());
         String repository_name = payload.get("repository_name").getAsString();
         String organization_name = payload.get("organization_name").getAsString();
         String[] user_names = googleJson.fromJson(payload.get("user_names").getAsJsonArray(), String[].class);
@@ -33,8 +37,8 @@ public class RepositoryController {
 
         String result = "";
         try {
-            result = GithubManager.createRepository(accessToken, organization_name, user_names,
-                                                                    repository_name, solutionUrl);
+            result = GithubManager.createRepository(accessToken, organization_name, user_names, profile.getUsername(),
+                                                                    repository_name, solutionUrl, release_date);
         } catch (IOException e) {
             e.printStackTrace();
             response.status(400);

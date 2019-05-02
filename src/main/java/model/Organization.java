@@ -40,4 +40,19 @@ public class Organization {
             return organization;
         }
     }
+
+    public static Organization getOrganization(UUID uuid){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Organization organization = new Organization();
+        try {
+            organization = session.createQuery("from Organization where organization_uuid=:organization_uuid", Organization.class)
+                    .setParameter("organization_uuid", uuid)
+                    .uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+            return organization;
+        }
+    }
 }

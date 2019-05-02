@@ -6,7 +6,10 @@ import org.hibernate.Transaction;
 import util.HibernateUtil;
 
 import javax.persistence.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -18,6 +21,7 @@ public class Repository {
 
     UUID user_uuid;
     UUID organization_uuid;
+    UUID repository_admin_uuid;
     String repository_name;
     String repository_description;
     String repository_visibility;
@@ -26,6 +30,11 @@ public class Repository {
     String repository_type;
     String repository_status;
     String solution_repository_git_url;
+    String user_name;
+    Boolean unlimited;
+    Integer try_count;
+    Date release_date;
+    Date due_date;
     Date repository_submission_date;
     Date created_at;
     Date updated_at;
@@ -45,6 +54,22 @@ public class Repository {
         }
     }
 
+    public static List<Repository> getAdminUserRepositoriesForToday(UUID adminUUID){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        List<Repository> repositories = new ArrayList<Repository>();
+        try {
+            repositories = session.createQuery("from Repository where repository_admin_uuid=:repository_admin_uuid AND release_date=:release_date", Repository.class)
+                    .setParameter("repository_admin_uuid", adminUUID)
+                    .setParameter("release_date", new Date())
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+        return repositories;
+    }
+
     public static void updateRepository(Repository updatedRepository){
         Session session = HibernateUtil.getSessionFactory().openSession();
         try {
@@ -55,7 +80,6 @@ public class Repository {
             Transaction transaction = session.beginTransaction();
             session.merge(updatedRepository);
             transaction.commit();
-            session.flush();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
