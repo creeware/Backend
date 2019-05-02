@@ -7,7 +7,9 @@ import util.HibernateUtil;
 
 import javax.persistence.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -61,6 +63,20 @@ public class User {
             session.close();
             return user;
         }
+    }
+
+    public static List<User> getUsers(){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        List<User>  users = new ArrayList<User>();
+        try {
+             users = session.createQuery("from User", User.class)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+        return users;
     }
 
     public UUID createGithubUser(org.eclipse.egit.github.core.User githubUser, String access_token, String jwt_token){
