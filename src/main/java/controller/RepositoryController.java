@@ -5,34 +5,33 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import github.GithubManager;
 import model.Repository;
+import model.User;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import spark.Request;
 import spark.Response;
-import model.Profile;
 import util.HibernateUtil;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.UUID;
 
 public class RepositoryController {
     // insert a repository
     public static String insertRepository(Request request, Response response) {
         Gson googleJson = new Gson();
-        Profile profile = new Profile(request, response);
         JsonParser jsonParser = new JsonParser();
-
-
-        String accessToken = String.valueOf(profile.profile.getAttribute("access_token"));
         JsonObject payload = jsonParser.parse(request.body()).getAsJsonObject();
+
+        User profile = User.getUser(payload.get("user_name").getAsString(), payload.get("client_name").getAsString());
+
+        String accessToken = String.valueOf(profile.getAccess_token());
 
         String repository_name = payload.get("repository_name").getAsString();
         String organization_name = payload.get("organization_name").getAsString();
         String[] user_names = googleJson.fromJson(payload.get("user_names").getAsJsonArray(), String[].class);
         String solutionUrl = payload.get("solution_repo_url").getAsString();
 
-       String result = "";
+        String result = "";
         try {
             result = GithubManager.createRepository(accessToken, organization_name, user_names,
                                                                     repository_name, solutionUrl);
