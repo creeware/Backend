@@ -5,9 +5,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import github.GithubManager;
 import model.Repository;
+import model.StandardJsonList;
 import model.User;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import spark.Request;
 import spark.Response;
 import util.HibernateUtil;
@@ -108,7 +110,7 @@ public class RepositoryController {
         }
     }
 
-    public static List<Repository> getRepositories(Request request, Response response){
+    public static StandardJsonList getRepositories(Request request, Response response){
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<Repository> repositories = new ArrayList<Repository>();
         String organization_uuid = request.queryParamOrDefault("organization_uuid", null);
@@ -119,6 +121,8 @@ public class RepositoryController {
         String repository_submission_date = request.queryParamOrDefault("repository_submission_date", null);
         String release_date = request.queryParamOrDefault("release_date", null);
         String due_date = request.queryParamOrDefault("due_date", null);
+        int page_size = Integer.parseInt(request.queryParamOrDefault("page_size", "10"));
+        int page = Integer.parseInt(request.queryParamOrDefault("page", "1"));
         if (organization_uuid != null){
             session.enableFilter("organization_uuid")
                     .setParameter("organization_uuid", organization_uuid);
@@ -151,16 +155,23 @@ public class RepositoryController {
             session.enableFilter("due_date")
                     .setParameter("due_date", due_date);
         }
+        String countQ = "Select count (repository.id) from Repository repository";
+        Query countQuery = session.createQuery(countQ);
+        Long countResults = (Long) countQuery.uniqueResult();
+        int lastPageNumber = (int) (Math.ceil(countResults / page_size));
+        int index = page_size * (page - 1);
         try {
-            repositories = session.createQuery("from Repository", Repository.class)
-                    .getResultList();
+            Query query = session.createQuery("from Repository", Repository.class);
+            query.setFirstResult(index);
+            query.setMaxResults(page_size);
+            repositories = query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
             response.status(400);
         } finally {
             session.close();
             response.status(200);
-            return repositories;
+            return new StandardJsonList(countResults, page, lastPageNumber, repositories);
         }
     }
 }

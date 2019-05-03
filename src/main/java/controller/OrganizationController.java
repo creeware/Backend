@@ -1,8 +1,10 @@
 package controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import model.StandardJsonList;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import payload.NewOrganizationPayload;
 import model.Organization;
 import spark.Request;
@@ -119,11 +121,13 @@ public class OrganizationController {
     }
 
 
-    public static List<Organization> getOrganizations(Request request, Response response){
+    public static StandardJsonList getOrganizations(Request request, Response response){
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<Organization> organizations = new ArrayList<Organization>();
         String organization_uuid = request.queryParamOrDefault("organization_uuid", null);
         String user_uuid = request.queryParamOrDefault("user_uuid", null);
+        int page_size = Integer.parseInt(request.queryParamOrDefault("page_size", "10"));
+        int page = Integer.parseInt(request.queryParamOrDefault("page", "1"));
         if (organization_uuid != null){
             session.enableFilter("organization_uuid")
                     .setParameter("organization_uuid", organization_uuid);
@@ -132,16 +136,23 @@ public class OrganizationController {
             session.enableFilter("user_uuid")
                     .setParameter("user_uuid", user_uuid);
         }
+        String countQ = "Select count (organization.id) from Organization organization";
+        Query countQuery = session.createQuery(countQ);
+        Long countResults = (Long) countQuery.uniqueResult();
+        int lastPageNumber = (int) (Math.ceil(countResults / page_size));
+        int index = page_size * (page - 1);
         try {
-            organizations = session.createQuery("from Organization", Organization.class)
-                    .getResultList();
+            Query query = session.createQuery("from Organization", Organization.class);
+            query.setFirstResult(index);
+            query.setMaxResults(page_size);
+            organizations = query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
             response.status(400);
         } finally {
             session.close();
             response.status(200);
-            return organizations;
+            return new StandardJsonList(countResults, page, lastPageNumber, organizations);
         }
     }
 

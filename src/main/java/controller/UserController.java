@@ -5,16 +5,20 @@ import com.github.scribejava.apis.GitHubApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import model.StandardJsonList;
 import model.User;
 import org.eclipse.egit.github.core.service.UserService;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -122,29 +126,38 @@ public class UserController {
         }
     }
 
-    public static List<User> getUsers(Request request, Response response){
+    public static StandardJsonList getUsers(Request request, Response response){
         Session session = HibernateUtil.getSessionFactory().openSession();
-        String displayName = request.queryParamOrDefault("user_display_name", null);
-        String userRole = request.queryParamOrDefault("user_role", null);
-        if (displayName != null){
+        String user_display_name = request.queryParamOrDefault("user_display_name", null);
+        String user_role = request.queryParamOrDefault("user_role", null);
+        int page_size = Integer.parseInt(request.queryParamOrDefault("page_size", "10"));
+        int page = Integer.parseInt(request.queryParamOrDefault("page", "1"));
+        if (user_display_name != null){
             session.enableFilter("user_display_name")
-                    .setParameter("user_display_name", displayName);
+                    .setParameter("user_display_name", user_display_name);
         }
-        if (userRole != null){
+        if (user_role != null){
             session.enableFilter("user_role")
-                    .setParameter("user_role", userRole);
+                    .setParameter("user_role", user_role);
         }
+        String countQ = "Select count (user.id) from User user";
+        Query countQuery = session.createQuery(countQ);
+        Long countResults = (Long) countQuery.uniqueResult();
+        int lastPageNumber = (int) (Math.ceil(countResults / page_size));
+        int index = page_size * (page - 1);
         List<User> users = new ArrayList<User>();
         try {
-            users = session.createQuery("from User", User.class)
-                    .getResultList();
+            Query query = session.createQuery("from User", User.class);
+            query.setFirstResult(index);
+            query.setMaxResults(page_size);
+            users = query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
             response.status(400);
         } finally {
             session.close();
             response.status(200);
-            return users;
+            return new StandardJsonList(countResults, page, lastPageNumber, users);
         }
     }
 }
