@@ -29,6 +29,5 @@
     <mapping class="model.Repository" />
     <mapping class="model.Organization" />
 
-
 </session-factory>
 </hibernate-configuration>

@@ -2,12 +2,32 @@ package model;
 
 import lombok.Data;
 import org.hibernate.Session;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 import util.HibernateUtil;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 
+
+@FilterDef(
+        name = "organization_uuid",
+        parameters = @ParamDef(name = "organization_uuid", type = "uuid")
+)
+@Filter(
+        name = "organization_uuid",
+        condition = "organization_uuid LIKE :organization_uuid"
+)
+@FilterDef(
+        name = "user_uuid",
+        parameters = @ParamDef(name = "user_uuid", type = "uuid")
+)
+@Filter(
+        name = "user_uuid",
+        condition = "user_uuid LIKE :user_uuid"
+)
 @Data
 @Entity
 @Table(name = "organizations")
