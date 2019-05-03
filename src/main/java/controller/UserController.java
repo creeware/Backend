@@ -22,19 +22,23 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class UserController {
 
     public static Route createAndGetProfile = (Request req, Response res) -> {
         final OAuth2AccessToken accessToken = getAccessToken(req);
-        User user = new User();
+
         org.eclipse.egit.github.core.User githubUser = getGithubUser(accessToken);
         Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
         String jws = Jwts.builder().setIssuedAt(new Date()).claim("access_token",accessToken.getAccessToken() ).setSubject(githubUser.getLogin()).signWith(key).compact();
+        User user = User.createGithubUser(githubUser, accessToken.getAccessToken(), jws);
+        jws = Jwts.builder().setIssuedAt(new Date()).claim("user_id", user.getUser_uuid()).claim("access_token",accessToken.getAccessToken() ).setSubject(githubUser.getLogin()).signWith(key).compact();
+        user.setJwt_token(jws);
+        User.updateUser(user);
         Map<String, String> map = new HashMap<>();
         map.put("access_token", jws);
-        user.createGithubUser(githubUser, accessToken.getAccessToken(), jws);
         res.body(new JsonTransformer().render(map));
         res.header("Authorization", "Bearer " + jws);
         return res.body();

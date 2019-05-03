@@ -79,11 +79,12 @@ public class User {
         return users;
     }
 
-    public UUID createGithubUser(org.eclipse.egit.github.core.User githubUser, String access_token, String jwt_token){
+    public static User createGithubUser(org.eclipse.egit.github.core.User githubUser, String access_token, String jwt_token){
         Session session = HibernateUtil.getSessionFactory().openSession();
+        User user = new User();
         try {
-            if (getUser(githubUser.getLogin(), "GitHubClient") == null){
-                User user = new User();
+            User existingUser = getUser(githubUser.getLogin(), "GitHubClient");
+            if (existingUser == null){
                 user.setUser_display_name(githubUser.getName());
                 user.setUsername(githubUser.getLogin());
                 user.setUser_email(githubUser.getEmail());
@@ -102,12 +103,35 @@ public class User {
                 session.flush();
                 transaction.commit();
                 // WelcomeEmail.main(profile.getEmail());
+            } else if(!existingUser.getAccess_token().equals(access_token) || !existingUser.getJwt_token().equals(jwt_token)) {
+                existingUser.setAccess_token(access_token);
+                existingUser.setJwt_token(jwt_token);
+                User.updateUser(existingUser);
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             session.close();
         }
-        return null;
+        return user;
     }
+
+
+    public static void updateUser(User updatedUser){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        try {
+            User user = session.createQuery("from User where user_uuid=:user_uuid", User.class)
+                    .setParameter("user_uuid", updatedUser.getUser_uuid())
+                    .uniqueResult();
+            updatedUser.setUpdated_at(new Date());
+            Transaction transaction = session.beginTransaction();
+            session.merge(updatedUser);
+            transaction.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+    }
+
 }
