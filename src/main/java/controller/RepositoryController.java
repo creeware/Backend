@@ -113,48 +113,53 @@ public class RepositoryController {
     public static StandardJsonList getRepositories(Request request, Response response){
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<Repository> repositories = new ArrayList<Repository>();
-        String organization_uuid = request.queryParamOrDefault("organization_uuid", null);
-        String user_uuid = request.queryParamOrDefault("user_uuid", null);
-        String repository_visibility = request.queryParamOrDefault("repository_visibility", null);
-        String repository_type = request.queryParamOrDefault("repository_type", null);
-        String repository_status = request.queryParamOrDefault("repository_status", null);
-        String repository_submission_date = request.queryParamOrDefault("repository_submission_date", null);
-        String release_date = request.queryParamOrDefault("release_date", null);
-        String due_date = request.queryParamOrDefault("due_date", null);
+
+        if (request.queryString() != null) {
+            String[] params = request.queryString().split("&");
+            for (String param : params) {
+                if (param.contains("organization_uuid")) {
+                    session.enableFilter("organization_uuid")
+                            .setParameter("organization_uuid", UUID.fromString(param.split("=")[1]));
+                } else if (param.contains("user_uuid")) {
+                    session.enableFilter("user_uuid")
+                            .setParameter("user_uuid", UUID.fromString(param.split("=")[1]));
+                } else if (param.contains("repository_visibility")) {
+                    session.enableFilter("repository_visibility")
+                            .setParameter("repository_visibility", param.split("=")[1]);
+                }
+                else if (param.contains("repository_type")) {
+                    session.enableFilter("repository_type")
+                            .setParameter("repository_type", param.split("=")[1]);
+                }
+                else if (param.contains("repository_status")) {
+                    session.enableFilter("repository_status")
+                            .setParameter("repository_status", param.split("=")[1]);
+                }
+                else if (param.contains("repository_submission_date")) {
+                    session.enableFilter("repository_submission_date")
+                            .setParameter("repository_submission_date", param.split("=")[1]);
+                }
+                else if (param.contains("repository_submission_date")) {
+                    session.enableFilter("repository_visibility")
+                            .setParameter("repository_visibility", param.split("=")[1]);
+                }
+                else if (param.contains("release_date")) {
+                    session.enableFilter("release_date")
+                            .setParameter("release_date", param.split("=")[1]);
+                }
+                else if (param.contains("due_date")) {
+                    session.enableFilter("due_date")
+                            .setParameter("due_date", param.split("=")[1]);
+                }
+                else if (param.contains("due_date")) {
+                    session.enableFilter("due_date")
+                            .setParameter("due_date", param.split("=")[1]);
+                }
+            }
+        }
+
         int page_size = Integer.parseInt(request.queryParamOrDefault("page_size", "10"));
         int page = Integer.parseInt(request.queryParamOrDefault("page", "1"));
-        if (organization_uuid != null){
-            session.enableFilter("organization_uuid")
-                    .setParameter("organization_uuid", organization_uuid);
-        }
-        if (user_uuid != null){
-            session.enableFilter("user_uuid")
-                    .setParameter("user_uuid", user_uuid);
-        }
-        if (repository_visibility != null){
-            session.enableFilter("repository_visibility")
-                    .setParameter("repository_visibility", organization_uuid);
-        }
-        if (repository_type != null){
-            session.enableFilter("repository_type")
-                    .setParameter("repository_type", repository_type);
-        }
-        if (repository_status != null){
-            session.enableFilter("repository_status")
-                    .setParameter("repository_status", repository_status);
-        }
-        if (repository_submission_date != null){
-            session.enableFilter("repository_submission_date")
-                    .setParameter("repository_submission_date", repository_submission_date);
-        }
-        if (release_date != null){
-            session.enableFilter("release_date")
-                    .setParameter("release_date", release_date);
-        }
-        if (due_date != null){
-            session.enableFilter("due_date")
-                    .setParameter("due_date", due_date);
-        }
         String countQ = "Select count (repository.id) from Repository repository";
         Query countQuery = session.createQuery(countQ);
         Long countResults = (Long) countQuery.uniqueResult();
@@ -162,8 +167,8 @@ public class RepositoryController {
         int index = page_size * (page - 1);
         try {
             Query query = session.createQuery("from Repository", Repository.class);
-            query.setFirstResult(index);
-            query.setMaxResults(page_size);
+            //query.setFirstResult(index);
+            //query.setMaxResults(page_size);
             repositories = query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
@@ -171,7 +176,23 @@ public class RepositoryController {
         } finally {
             session.close();
             response.status(200);
-            return new StandardJsonList(countResults, page, lastPageNumber, repositories);
+            return new StandardJsonList(countResults, page, page_size, lastPageNumber, repositories);
+        }
+    }
+
+    public static List<Repository>  getMinimalRepositories(Request request, Response response){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        List<Repository> repositories = new ArrayList<Repository>();
+        try {
+            repositories = session.createQuery("from Repository repository", Repository.class).getResultList();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.status(400);
+        } finally {
+            session.close();
+            response.status(200);
+            return repositories;
         }
     }
 }

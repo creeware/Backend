@@ -19,6 +19,7 @@ public class AuthenticationController {
             Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
             String jws = request.headers("Authorization").replaceAll("Bearer ", "");
             User user = User.getUser(jws);
+
             assert Jwts.parser().setSigningKey(key).parseClaimsJws(jws).getBody().getSubject().equals(user.getUsername());
             //OK, we can trust this JWT
         } catch (Exception e) {

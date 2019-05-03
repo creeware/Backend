@@ -6,6 +6,7 @@ import util.Path.*;
 import java.net.URI;
 import java.util.UUID;
 
+import static controller.RepositoryController.getMinimalRepositories;
 import static controller.UserController.createAndGetProfile;
 import static spark.Spark.*;
 
@@ -26,33 +27,39 @@ public class Main {
             path(Web.USERS, () -> {
                 delete("/:uuid", "application/json", (request, response) ->
                         UserController.deleteUser(request, response));
-                patch("", UserController::updateUser);
+                patch("/patch", UserController::updateUser, new JsonTransformer());
                 get("/:uuid", "application/json", (request, response) ->
                         UserController.getUser(request, response), new JsonTransformer());
                 get("/list/", "application/json", (request, response) ->
                         UserController.getUsers(request, response), new JsonTransformer());
+                get("/minimal_list/", "application/json", (request, response) ->
+                        UserController.getMinimalUsers(request, response), new JsonTransformer());
             });
 
             path(Web.REPOSITORIES, () -> {
-                post("", RepositoryController::insertRepository);
+                post("/post", RepositoryController::insertRepository);
                 delete("/:uuid", "application/json", (request, response) ->
                         RepositoryController.deleteRepository(request, response));
-                patch("", RepositoryController::updateRepository);
+                patch("/patch", RepositoryController::updateRepository);
                 get("/:uuid", "application/json", (request, response) ->
                         RepositoryController.getRepository(request, response), new JsonTransformer());
                 get("/list/", "application/json", (request, response) ->
                         RepositoryController.getRepositories(request, response), new JsonTransformer());
+                get("/minimal_list/", "application/json", (request, response) ->
+                        getMinimalRepositories(request, response), new JsonTransformer());
             });
 
             path(Web.ORGANIZATIONS, () -> {
-                post("", OrganizationController::insertOrganization);
+                post("/post", OrganizationController::insertOrganization);
                 delete(":uuid",  (request, response) ->
                         OrganizationController.deleteOrganization(request, response));
-                patch("", OrganizationController::updateOrganization);
+                patch("/patch", OrganizationController::updateOrganization);
                 get("/:uuid", "application/json", (request, response) ->
                         OrganizationController.getOrganization(request, response), new JsonTransformer());
                 get("/list/", "application/json", (request, response) ->
                         OrganizationController.getOrganizations(request, response), new JsonTransformer());
+                get("/minimal_list/", "application/json", (request, response) ->
+                        OrganizationController.getMinimalOrganizations(request, response), new JsonTransformer());
             });
         });
 

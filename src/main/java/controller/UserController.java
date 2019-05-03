@@ -13,6 +13,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import model.MinimalUser;
 import model.StandardJsonList;
 import model.User;
 import org.eclipse.egit.github.core.service.UserService;
@@ -70,9 +71,13 @@ public class UserController {
     }
 
     // Update a user
-    public static String updateUser(Request request, Response response) throws IOException {
+    public static User updateUser(Request request, Response response) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         User updatedUser = mapper.readValue(request.body(), User.class);
+        String jws = request.headers("Authorization").replaceAll("Bearer ", "");
+        User user = User.getUser(jws);
+        updatedUser.setAccess_token(user.getAccess_token());
+        updatedUser.setJwt_token(user.getJwt_token());
         try {
             User.updateUser(updatedUser);
         } catch (Exception e) {
@@ -81,7 +86,8 @@ public class UserController {
         } finally {
             response.status(200);
             response.type("application/json");
-            return "success";
+            User newUser = User.getUser(jws);
+            return newUser;
         }
     }
 
@@ -128,18 +134,22 @@ public class UserController {
 
     public static StandardJsonList getUsers(Request request, Response response){
         Session session = HibernateUtil.getSessionFactory().openSession();
-        String user_display_name = request.queryParamOrDefault("user_display_name", null);
-        String user_role = request.queryParamOrDefault("user_role", null);
+
+        if (request.queryString() != null) {
+            String[] params = request.queryString().split("&");
+            for (String param : params) {
+                if (param.contains("user_uuid")) {
+                    session.enableFilter("user_uuid")
+                            .setParameter("user_uuid", UUID.fromString(param.split("=")[1]));
+                } else if (param.contains("user_role")) {
+                    session.enableFilter("user_role")
+                            .setParameter("user_role", param.split("=")[1]);
+                }
+            }
+        }
+
         int page_size = Integer.parseInt(request.queryParamOrDefault("page_size", "10"));
         int page = Integer.parseInt(request.queryParamOrDefault("page", "1"));
-        if (user_display_name != null){
-            session.enableFilter("user_display_name")
-                    .setParameter("user_display_name", user_display_name);
-        }
-        if (user_role != null){
-            session.enableFilter("user_role")
-                    .setParameter("user_role", user_role);
-        }
         String countQ = "Select count (user.id) from User user";
         Query countQuery = session.createQuery(countQ);
         Long countResults = (Long) countQuery.uniqueResult();
@@ -148,8 +158,8 @@ public class UserController {
         List<User> users = new ArrayList<User>();
         try {
             Query query = session.createQuery("from User", User.class);
-            query.setFirstResult(index);
-            query.setMaxResults(page_size);
+            // query.setFirstResult(index);
+            // query.setMaxResults(page_size);
             users = query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
@@ -157,7 +167,23 @@ public class UserController {
         } finally {
             session.close();
             response.status(200);
-            return new StandardJsonList(countResults, page, lastPageNumber, users);
+            return new StandardJsonList(countResults, page, page_size, lastPageNumber, users);
+        }
+    }
+
+    public static List<User>  getMinimalUsers(Request request, Response response){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        List<User> users = new ArrayList<User>();
+        try {
+            users = session.createQuery("from User user", User.class).getResultList();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.status(400);
+        } finally {
+            session.close();
+            response.status(200);
+            return users;
         }
     }
 }
