@@ -3,6 +3,9 @@ package model;
 import lombok.Data;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 import util.HibernateUtil;
 
 import javax.persistence.*;
@@ -12,6 +15,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+
+@FilterDef(
+        name = "user_display_name",
+        parameters = @ParamDef(name = "user_display_name", type = "string")
+)
+@Filter(
+        name = "displayNameFilter",
+        condition = "user_display_name LIKE :user_display_name"
+)
+@FilterDef(
+        name = "user_role",
+        parameters = @ParamDef(name = "user_role", type = "string")
+)
+@Filter(
+        name = "userRole",
+        condition = "user_role LIKE :user_role"
+)
 @Data
 @Entity
 @Table(name = "users")
@@ -100,7 +120,6 @@ public class User {
 
                 Transaction transaction = session.beginTransaction();
                 session.persist(user);
-                session.flush();
                 transaction.commit();
                 // WelcomeEmail.main(profile.getEmail());
             } else if(!existingUser.getAccess_token().equals(access_token) || !existingUser.getJwt_token().equals(jwt_token)) {
@@ -108,6 +127,8 @@ public class User {
                 existingUser.setJwt_token(jwt_token);
                 User.updateUser(existingUser);
             }
+
+            user = getUser(githubUser.getLogin(), "GitHubClient");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

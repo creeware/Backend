@@ -1,10 +1,8 @@
-import controller.AuthenticationController;
-import controller.GithubController;
-import controller.OrganizationController;
+import controller.*;
 import org.sql2o.*;
 import util.JsonTransformer;
 import util.Path.*;
-import controller.RepositoryController;
+
 import java.net.URI;
 import java.util.UUID;
 
@@ -25,23 +23,36 @@ public class Main {
         path(Web.API, () -> {
             before("/*", AuthenticationController::ensureUserIsLoggedIn);
 
+            path(Web.USERS, () -> {
+                delete("/:uuid", "application/json", (request, response) ->
+                        UserController.deleteUser(request, response));
+                patch("", UserController::updateUser);
+                get("/:uuid", "application/json", (request, response) ->
+                        UserController.getUser(request, response), new JsonTransformer());
+                get("/list/", "application/json", (request, response) ->
+                        UserController.getUsers(request, response), new JsonTransformer());
+            });
+
             path(Web.REPOSITORIES, () -> {
                 post("", RepositoryController::insertRepository);
                 delete("/:uuid", "application/json", (request, response) ->
-                        RepositoryController.deleteRepository(UUID.fromString(request.params(":uuid")), response));
+                        RepositoryController.deleteRepository(request, response));
                 patch("", RepositoryController::updateRepository);
                 get("/:uuid", "application/json", (request, response) ->
-                        RepositoryController.getRepository(UUID.fromString(request.params(":uuid")), response), new JsonTransformer());
+                        RepositoryController.getRepository(request, response), new JsonTransformer());
+                get("/list/", "application/json", (request, response) ->
+                        RepositoryController.getRepositories(request, response), new JsonTransformer());
             });
-
 
             path(Web.ORGANIZATIONS, () -> {
                 post("", OrganizationController::insertOrganization);
                 delete(":uuid",  (request, response) ->
-                        OrganizationController.deleteOrganization(UUID.fromString(request.params(":uuid")), response));
+                        OrganizationController.deleteOrganization(request, response));
                 patch("", OrganizationController::updateOrganization);
                 get("/:uuid", "application/json", (request, response) ->
-                        OrganizationController.getOrganization(UUID.fromString(request.params(":uuid")), response), new JsonTransformer());
+                        OrganizationController.getOrganization(request, response), new JsonTransformer());
+                get("/list/", "application/json", (request, response) ->
+                        OrganizationController.getOrganizations(request, response), new JsonTransformer());
             });
         });
 
@@ -50,7 +61,7 @@ public class Main {
             return result;
         });
 
-        post("auth/github",(req,res) -> createAndGetProfile.handle(req, res));
+        post(Auth.GITHUB,(req,res) -> createAndGetProfile.handle(req, res));
     }
 
     static private int getHerokuAssignedPort() {

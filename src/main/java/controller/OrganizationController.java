@@ -10,7 +10,9 @@ import spark.Response;
 import util.HibernateUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 public class OrganizationController {
@@ -75,7 +77,8 @@ public class OrganizationController {
         }
     }
 
-    public static String deleteOrganization(UUID uuid, Response response){
+    public static String deleteOrganization(Request request, Response response){
+        UUID uuid= UUID.fromString(request.params(":uuid"));
         Session session = HibernateUtil.getSessionFactory().openSession();
         try {
             Organization organization = session.createQuery("from Organization where organization_uuid=:organization_uuid", Organization.class)
@@ -97,7 +100,8 @@ public class OrganizationController {
     }
 
 
-    public static Organization getOrganization(UUID uuid, Response response){
+    public static Organization getOrganization(Request request, Response response){
+        UUID uuid= UUID.fromString(request.params(":uuid"));
         Session session = HibernateUtil.getSessionFactory().openSession();
         Organization organization = new Organization();
         try {
@@ -111,6 +115,33 @@ public class OrganizationController {
             session.close();
             response.status(200);
             return organization;
+        }
+    }
+
+
+    public static List<Organization> getOrganizations(Request request, Response response){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        List<Organization> organizations = new ArrayList<Organization>();
+        String organization_uuid = request.queryParamOrDefault("organization_uuid", null);
+        String user_uuid = request.queryParamOrDefault("user_uuid", null);
+        if (organization_uuid != null){
+            session.enableFilter("organization_uuid")
+                    .setParameter("organization_uuid", organization_uuid);
+        }
+        if (user_uuid != null){
+            session.enableFilter("user_uuid")
+                    .setParameter("user_uuid", user_uuid);
+        }
+        try {
+            organizations = session.createQuery("from Organization", Organization.class)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.status(400);
+        } finally {
+            session.close();
+            response.status(200);
+            return organizations;
         }
     }
 

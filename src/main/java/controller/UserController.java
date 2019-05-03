@@ -1,5 +1,6 @@
 package controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.apis.GitHubApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
@@ -12,17 +13,20 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import model.User;
 import org.eclipse.egit.github.core.service.UserService;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import util.HibernateUtil;
 import util.JsonTransformer;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class UserController {
@@ -59,5 +63,88 @@ public class UserController {
         UserService userService = new UserService();
         userService.getClient().setOAuth2Token(accessToken.getAccessToken());
         return userService.getUser();
+    }
+
+    // Update a user
+    public static String updateUser(Request request, Response response) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        User updatedUser = mapper.readValue(request.body(), User.class);
+        try {
+            User.updateUser(updatedUser);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.status(400);
+        } finally {
+            response.status(200);
+            response.type("application/json");
+            return "success";
+        }
+    }
+
+    public static String deleteUser(Request request, Response response){
+        UUID uuid= UUID.fromString(request.params(":uuid"));
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        try {
+            User user = session.createQuery("from User where user_uuid=:user_uuid", User.class)
+                    .setParameter("user_uuid", uuid)
+                    .uniqueResult();
+
+            Transaction transaction = session.beginTransaction();
+            session.remove(user);
+            session.flush();
+            transaction.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.status(400);
+        } finally {
+            session.close();
+            response.status(204);
+            return "success";
+        }
+    }
+
+
+    public static User getUser(Request request, Response response){
+        UUID uuid= UUID.fromString(request.params(":uuid"));
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        User user = new User();
+        try {
+            user = session.createQuery("from User where user_uuid=:user_uuid", User.class)
+                    .setParameter("user_uuid", uuid)
+                    .uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.status(400);
+        } finally {
+            session.close();
+            response.status(200);
+            return user;
+        }
+    }
+
+    public static List<User> getUsers(Request request, Response response){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        String displayName = request.queryParamOrDefault("user_display_name", null);
+        String userRole = request.queryParamOrDefault("user_role", null);
+        if (displayName != null){
+            session.enableFilter("user_display_name")
+                    .setParameter("user_display_name", displayName);
+        }
+        if (userRole != null){
+            session.enableFilter("user_role")
+                    .setParameter("user_role", userRole);
+        }
+        List<User> users = new ArrayList<User>();
+        try {
+            users = session.createQuery("from User", User.class)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.status(400);
+        } finally {
+            session.close();
+            response.status(200);
+            return users;
+        }
     }
 }
