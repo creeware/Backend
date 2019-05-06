@@ -9,7 +9,7 @@
     <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
 
     <!-- JDBC connection pool (use the built-in) -->
-    <property name="connection.pool_size">1</property>
+    <property name="connection.pool_size">25</property>
 
     <!-- Disable the second-level cache -->
     <property name="cache.provider_class">org.hibernate.cache.internal.NoCacheProvider</property>
@@ -28,6 +28,7 @@
     <mapping class="model.User" />
     <mapping class="model.Repository" />
     <mapping class="model.Organization" />
+    <mapping class="model.MinimalUser" />
 
 </session-factory>
 </hibernate-configuration>

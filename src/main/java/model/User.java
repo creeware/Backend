@@ -1,5 +1,8 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.gson.annotations.Expose;
 import lombok.Data;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -17,41 +20,54 @@ import java.util.UUID;
 
 
 @FilterDef(
-        name = "user_display_name",
-        parameters = @ParamDef(name = "user_display_name", type = "string")
+        name = "user_uuid",
+        parameters = @ParamDef(name = "user_uuid", type = "string")
 )
 @Filter(
-        name = "displayNameFilter",
-        condition = "user_display_name LIKE :user_display_name"
+        name = "user_uuid",
+        condition = "user_uuid = :user_uuid"
 )
 @FilterDef(
         name = "user_role",
         parameters = @ParamDef(name = "user_role", type = "string")
 )
 @Filter(
-        name = "userRole",
+        name = "user_role",
         condition = "user_role LIKE :user_role"
 )
 @Data
 @Entity
 @Table(name = "users")
 public class User {
-    @Id
-    UUID user_uuid;
 
-    String user_display_name;
-    String username;
-    String user_email;
-    String user_client;
-    String avatar_url;
-    String profile_url;
-    String user_role;
-    String user_location;
-    String access_token;
-    String jwt_token;
-    String user_bio;
-    Date created_at;
-    Date updated_at;
+    private String access_token;
+    private String jwt_token;
+
+    @Id
+    @Expose
+    private UUID user_uuid;
+    @Expose
+    private String user_display_name;
+    @Expose
+    private String username;
+    @Expose
+    private String user_email;
+    @Expose
+    private String user_client;
+    @Expose
+    private String avatar_url;
+    @Expose
+    private String profile_url;
+    @Expose
+    private String user_role;
+    @Expose
+    private String user_location;
+    @Expose
+    private String user_bio;
+    @Expose
+    private Date created_at;
+    @Expose
+    private Date updated_at;
 
     public static User getUser(String username, String clientName){
         Session session = HibernateUtil.getSessionFactory().openSession();
@@ -110,7 +126,7 @@ public class User {
                 user.setUser_email(githubUser.getEmail());
                 user.setUser_client("GitHubClient");
                 user.setAvatar_url(githubUser.getAvatarUrl());
-                user.setProfile_url(githubUser.getUrl());
+                user.setProfile_url(githubUser.getHtmlUrl());
                 user.setUser_role("user");
                 user.setUser_location(githubUser.getLocation());
                 user.setAccess_token(access_token);

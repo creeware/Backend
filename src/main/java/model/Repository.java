@@ -1,5 +1,6 @@
 package model;
 
+import com.google.gson.annotations.Expose;
 import lombok.Data;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -9,26 +10,25 @@ import org.hibernate.annotations.ParamDef;
 import util.HibernateUtil;
 
 import javax.persistence.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 @FilterDef(
         name = "organization_uuid",
-        parameters = @ParamDef(name = "organization_uuid", type = "uuid")
+        parameters = @ParamDef(name = "organization_uuid", type = "pg-uuid")
 )
 @Filter(
         name = "organization_uuid",
-        condition = "organization_uuid LIKE :organization_uuid"
+        condition = "organization_uuid = :organization_uuid"
 )
 @FilterDef(
         name = "user_uuid",
-        parameters = @ParamDef(name = "user_uuid", type = "uuid")
+        parameters = @ParamDef(name = "user_uuid", type = "pg-uuid")
 )
 @Filter(
         name = "user_uuid",
-        condition = "user_uuid LIKE :user_uuid"
+        condition = "user_uuid = :user_uuid"
 )
 @FilterDef(
         name = "repository_visibility",
@@ -82,27 +82,45 @@ import java.util.UUID;
 @Table(name = "repositories")
 public class Repository {
     @Id
-    UUID repository_uuid;
-
-    UUID user_uuid;
-    UUID organization_uuid;
-    UUID repository_admin_uuid;
-    String repository_name;
-    String repository_description;
-    String repository_visibility;
-    String repository_git_url;
-    String repository_github_type;
-    String repository_type;
-    String repository_status;
-    String solution_repository_git_url;
-    String user_name;
-    Boolean unlimited;
-    Integer try_count;
-    Date release_date;
-    Date due_date;
-    Date repository_submission_date;
-    Date created_at;
-    Date updated_at;
+    @Expose
+    private UUID repository_uuid;
+    @Expose
+    private UUID user_uuid;
+    @Expose
+    private UUID organization_uuid;
+    @Expose
+    private UUID repository_admin_uuid;
+    @Expose
+    private String repository_name;
+    @Expose
+    private String repository_description;
+    @Expose
+    private String repository_visibility;
+    @Expose
+    private String repository_git_url;
+    @Expose
+    private String repository_github_type;
+    @Expose
+    private String repository_type;
+    @Expose
+    private String repository_status;
+    @Expose
+    private String solution_repository_git_url;
+    private String user_name;
+    @Expose
+    private Boolean unlimited;
+    @Expose
+    private Integer try_count;
+    @Expose
+    private Date release_date;
+    @Expose
+    private Date due_date;
+    @Expose
+    private Date repository_submission_date;
+    @Expose
+    private Date created_at;
+    @Expose
+    private Date updated_at;
 
     public static Repository getRepository(String repositoryName){
         Session session = HibernateUtil.getSessionFactory().openSession();

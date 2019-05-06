@@ -1,5 +1,6 @@
 package model;
 
+import com.google.gson.annotations.Expose;
 import lombok.Data;
 import org.hibernate.Session;
 import org.hibernate.annotations.Filter;
@@ -14,36 +15,45 @@ import java.util.UUID;
 
 @FilterDef(
         name = "organization_uuid",
-        parameters = @ParamDef(name = "organization_uuid", type = "uuid")
+        parameters = @ParamDef(name = "organization_uuid", type = "pg-uuid")
 )
 @Filter(
         name = "organization_uuid",
-        condition = "organization_uuid LIKE :organization_uuid"
+        condition = "organization_uuid = :organization_uuid"
 )
 @FilterDef(
         name = "user_uuid",
-        parameters = @ParamDef(name = "user_uuid", type = "uuid")
+        parameters = @ParamDef(name = "user_uuid", type = "pg-uuid")
 )
 @Filter(
         name = "user_uuid",
-        condition = "user_uuid LIKE :user_uuid"
+        condition = "user_uuid = :user_uuid"
 )
 @Data
 @Entity
 @Table(name = "organizations")
 public class Organization {
     @Id
-    UUID organization_uuid;
-
-    UUID user_uuid;
-    String organization_name;
-    String organization_description;
-    String company_name;
-    int repository_count;
-    String organization_git_url;
-    String organization_github_type;
-    Date created_at;
-    Date updated_at;
+    @Expose
+    private UUID organization_uuid;
+    @Expose
+    private UUID user_uuid;
+    @Expose
+    private String organization_name;
+    @Expose
+    private String organization_description;
+    @Expose
+    private String company_name;
+    @Expose
+    private int repository_count;
+    @Expose
+    private String organization_git_url;
+    @Expose
+    private String organization_github_type;
+    @Expose
+    private Date created_at;
+    @Expose
+    private Date updated_at;
 
 
     public static Organization getOrganization(String organizationName){

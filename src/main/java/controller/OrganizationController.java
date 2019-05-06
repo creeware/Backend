@@ -26,7 +26,7 @@ public class OrganizationController {
 
         Session session = HibernateUtil.getSessionFactory().openSession();
         try {
-            if (Organization.getOrganization(creation.getOrganization_name()) == null){
+            if (Organization.getOrganization(creation.getOrganization_name()) == null) {
                 Organization organization = new Organization();
 
                 organization.setOrganization_uuid(UUID.randomUUID());
@@ -41,7 +41,6 @@ public class OrganizationController {
 
                 Transaction transaction = session.beginTransaction();
                 session.persist(organization);
-                session.flush();
                 transaction.commit();
             }
         } catch (Exception e) {
@@ -79,8 +78,8 @@ public class OrganizationController {
         }
     }
 
-    public static String deleteOrganization(Request request, Response response){
-        UUID uuid= UUID.fromString(request.params(":uuid"));
+    public static String deleteOrganization(Request request, Response response) {
+        UUID uuid = UUID.fromString(request.params(":uuid"));
         Session session = HibernateUtil.getSessionFactory().openSession();
         try {
             Organization organization = session.createQuery("from Organization where organization_uuid=:organization_uuid", Organization.class)
@@ -102,12 +101,12 @@ public class OrganizationController {
     }
 
 
-    public static Organization getOrganization(Request request, Response response){
-        UUID uuid= UUID.fromString(request.params(":uuid"));
+    public static Organization getOrganization(Request request, Response response) {
+        UUID uuid = UUID.fromString(request.params(":uuid"));
         Session session = HibernateUtil.getSessionFactory().openSession();
         Organization organization = new Organization();
         try {
-             organization = session.createQuery("from Organization where organization_uuid=:organization_uuid", Organization.class)
+            organization = session.createQuery("from Organization where organization_uuid=:organization_uuid", Organization.class)
                     .setParameter("organization_uuid", uuid)
                     .uniqueResult();
         } catch (Exception e) {
@@ -121,21 +120,24 @@ public class OrganizationController {
     }
 
 
-    public static StandardJsonList getOrganizations(Request request, Response response){
+    public static StandardJsonList getOrganizations(Request request, Response response) {
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<Organization> organizations = new ArrayList<Organization>();
-        String organization_uuid = request.queryParamOrDefault("organization_uuid", null);
-        String user_uuid = request.queryParamOrDefault("user_uuid", null);
+        if (request.queryString() != null) {
+            String[] params = request.queryString().split("&");
+            for (String param : params) {
+                if (param.contains("organization_uuid")) {
+                    session.enableFilter("organization_uuid")
+                            .setParameter("organization_uuid", UUID.fromString(param.split("=")[1]));
+                } else if (param.contains("user_uuid")) {
+                    session.enableFilter("user_uuid")
+                            .setParameter("user_uuid", UUID.fromString(param.split("=")[1]));
+                }
+            }
+        }
+
         int page_size = Integer.parseInt(request.queryParamOrDefault("page_size", "10"));
         int page = Integer.parseInt(request.queryParamOrDefault("page", "1"));
-        if (organization_uuid != null){
-            session.enableFilter("organization_uuid")
-                    .setParameter("organization_uuid", organization_uuid);
-        }
-        if (user_uuid != null){
-            session.enableFilter("user_uuid")
-                    .setParameter("user_uuid", user_uuid);
-        }
         String countQ = "Select count (organization.id) from Organization organization";
         Query countQuery = session.createQuery(countQ);
         Long countResults = (Long) countQuery.uniqueResult();
@@ -143,8 +145,8 @@ public class OrganizationController {
         int index = page_size * (page - 1);
         try {
             Query query = session.createQuery("from Organization", Organization.class);
-            query.setFirstResult(index);
-            query.setMaxResults(page_size);
+            //query.setFirstResult(index);
+            //query.setMaxResults(page_size);
             organizations = query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
@@ -152,7 +154,23 @@ public class OrganizationController {
         } finally {
             session.close();
             response.status(200);
-            return new StandardJsonList(countResults, page, lastPageNumber, organizations);
+            return new StandardJsonList(countResults, page, page_size, lastPageNumber, organizations);
+        }
+    }
+
+    public static List<Organization> getMinimalOrganizations(Request request, Response response) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        List<Organization> organizations = new ArrayList<Organization>();
+        try {
+            organizations = session.createQuery("from Organization organization", Organization.class).getResultList();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.status(400);
+        } finally {
+            session.close();
+            response.status(200);
+            return organizations;
         }
     }
 
