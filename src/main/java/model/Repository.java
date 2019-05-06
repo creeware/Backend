@@ -59,7 +59,7 @@ import java.util.UUID;
 )
 @Filter(
         name = "repository_submission_date",
-        condition = "repository_submission_date = :repository_submission_date"
+        condition = "repository_submission_date >= :repository_submission_date"
 )
 @FilterDef(
         name = "release_date",
@@ -67,7 +67,7 @@ import java.util.UUID;
 )
 @Filter(
         name = "release_date",
-        condition = "release_date = :release_date"
+        condition = "release_date >= :release_date"
 )
 @FilterDef(
         name = "due_date",
@@ -75,7 +75,7 @@ import java.util.UUID;
 )
 @Filter(
         name = "due_date",
-        condition = "due_date = :due_date"
+        condition = "due_date >= :due_date"
 )
 @Data
 @Entity
