@@ -110,7 +110,7 @@ public class RepositoryController {
         }
     }
 
-    public static StandardJsonList getRepositories(Request request, Response response){
+    public static StandardJsonList getRepositories(Request request, Response response) throws ParseException {
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<Repository> repositories = new ArrayList<Repository>();
 
@@ -136,24 +136,17 @@ public class RepositoryController {
                             .setParameter("repository_status", param.split("=")[1]);
                 }
                 else if (param.contains("repository_submission_date")) {
+                    System.out.println(new SimpleDateFormat("yyyy-mm-dd").parse(param.split("=")[1]));
                     session.enableFilter("repository_submission_date")
-                            .setParameter("repository_submission_date", param.split("=")[1]);
-                }
-                else if (param.contains("repository_submission_date")) {
-                    session.enableFilter("repository_visibility")
-                            .setParameter("repository_visibility", param.split("=")[1]);
+                            .setParameter("repository_submission_date", new SimpleDateFormat("yyyy-mm-dd").parse(param.split("=")[1]));
                 }
                 else if (param.contains("release_date")) {
                     session.enableFilter("release_date")
-                            .setParameter("release_date", param.split("=")[1]);
+                            .setParameter("release_date", new SimpleDateFormat("yyyy-mm-dd").parse(param.split("=")[1]));
                 }
                 else if (param.contains("due_date")) {
                     session.enableFilter("due_date")
-                            .setParameter("due_date", param.split("=")[1]);
-                }
-                else if (param.contains("due_date")) {
-                    session.enableFilter("due_date")
-                            .setParameter("due_date", param.split("=")[1]);
+                            .setParameter("due_date", new SimpleDateFormat("yyyy-mm-dd").parse(param.split("=")[1]));
                 }
             }
         }
