@@ -1,7 +1,12 @@
 package controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import github.GithubManager;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import model.Repository;
 import model.StandardJsonList;
+import org.eclipse.egit.github.core.service.OrganizationService;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -12,47 +17,13 @@ import spark.Response;
 import util.HibernateUtil;
 
 import java.io.IOException;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 public class OrganizationController {
-
-    // Insert a Organization
-    public static String insertOrganization(Request request, Response response) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        NewOrganizationPayload creation = mapper.readValue(request.body(), NewOrganizationPayload.class);
-
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        try {
-            if (Organization.getOrganization(creation.getOrganization_name()) == null) {
-                Organization organization = new Organization();
-
-                organization.setOrganization_uuid(UUID.randomUUID());
-                organization.setUser_uuid(creation.getUser_uuid());
-                organization.setOrganization_name(creation.getOrganization_name());
-                organization.setOrganization_description(creation.getOrganization_description());
-                organization.setCompany_name(creation.getCompany_name());
-                organization.setRepository_count(creation.getRepository_count());
-                organization.setOrganization_git_url(creation.getOrganization_git_url());
-                organization.setOrganization_github_type(creation.getOrganization_github_type());
-                organization.setCreated_at(new Date());
-
-                Transaction transaction = session.beginTransaction();
-                session.persist(organization);
-                transaction.commit();
-            }
-        } catch (Exception e) {
-            response.status(400);
-            e.printStackTrace();
-        } finally {
-            session.close();
-            response.status(200);
-            response.type("application/json");
-            return "success";
-        }
-    }
 
     // Update a organization
     public static String updateOrganization(Request request, Response response) throws IOException {
@@ -172,6 +143,15 @@ public class OrganizationController {
             response.status(200);
             return organizations;
         }
+    }
+
+    public static List<Repository> importOrganization(Request request, Response response) throws IOException {
+        Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        String jws = request.headers("Authorization").replaceAll("Bearer ", "");
+        ObjectMapper mapper = new ObjectMapper();
+        NewOrganizationPayload creation = mapper.readValue(request.body(), NewOrganizationPayload.class);
+        List<Repository> repositories = GithubManager.importOrganization(jws, creation.getOrganization_name());
+        return repositories;
     }
 
 

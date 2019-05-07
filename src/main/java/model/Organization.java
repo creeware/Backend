@@ -3,6 +3,7 @@ package model;
 import com.google.gson.annotations.Expose;
 import lombok.Data;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
@@ -56,7 +57,7 @@ public class Organization {
     private Date updated_at;
 
 
-    public static Organization getOrganization(String organizationName){
+    public static Organization getOrganization(String organizationName) {
         Session session = HibernateUtil.getSessionFactory().openSession();
         Organization organization = new Organization();
         try {
@@ -71,7 +72,7 @@ public class Organization {
         }
     }
 
-    public static Organization getOrganization(UUID uuid){
+    public static Organization getOrganization(UUID uuid) {
         Session session = HibernateUtil.getSessionFactory().openSession();
         Organization organization = new Organization();
         try {
@@ -84,5 +85,30 @@ public class Organization {
             session.close();
             return organization;
         }
+    }
+
+    public static Organization createOrganization(User user, org.eclipse.egit.github.core.User organization) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Organization newOrganization = new Organization();
+        newOrganization.setCompany_name(organization.getCompany());
+        newOrganization.setOrganization_description(organization.getBio());
+        newOrganization.setOrganization_git_url(organization.getHtmlUrl());
+        newOrganization.setOrganization_github_type(organization.getType());
+        newOrganization.setUser_uuid(user.getUser_uuid());
+        newOrganization.setOrganization_uuid(UUID.randomUUID());
+        newOrganization.setOrganization_name(organization.getLogin());
+        newOrganization.setRepository_count(organization.getPublicRepos());
+        newOrganization.setCreated_at(new Date());
+
+        try {
+            Transaction transaction = session.beginTransaction();
+            session.persist(newOrganization);
+            transaction.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+        return newOrganization;
     }
 }
