@@ -15,7 +15,7 @@ public class InviteEmail extends Email {
     private String subjectTemplate = "Invitation to %s.";
     private String bodyTemplate;
 
-    public InviteEmail(UUID recipient, String organization) {
+    public InviteEmail(String email) {
         super();
         File bodyTemplateFile = new File("src/main/java/email/InviteEmailTemplate.html");
         try {
@@ -28,11 +28,11 @@ public class InviteEmail extends Email {
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("TEMPLATE NOT FOUND!\nRAW OUTPUT WILL BE USED");
-            bodyTemplate = "Hello %s, you have been invited to the organization <a href='https://github.com/%s'>%s</a>.";
+            bodyTemplate = "Hi! You have been invited to Creeware :) <a href='https://creeware.com'>creeware.com</a>.";
         }
-        to = getUserMail(recipient);
-        subject = String.format(subjectTemplate, organization);
-        body = String.format(bodyTemplate, getUserDisplayName(recipient), organization, organization);
+        to = email;
+        subject = String.format(subjectTemplate, "Creeware");
+        body = String.format(bodyTemplate);
     }
 
     @Override

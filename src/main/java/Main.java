@@ -25,6 +25,8 @@ public class Main {
             before("/*", AuthenticationController::ensureUserIsLoggedIn);
 
             path(Web.USERS, () -> {
+                post("/invite/", "application/json", (request, response) ->
+                        UserController.inviteUser(request, response));
                 delete("/:uuid", "application/json", (request, response) ->
                         UserController.deleteUser(request, response));
                 patch("/patch/", UserController::updateUser, new JsonTransformer());
