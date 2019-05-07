@@ -9,17 +9,20 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import email.InviteEmail;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import model.MinimalUser;
+import model.Organization;
 import model.StandardJsonList;
 import model.User;
 import org.eclipse.egit.github.core.service.UserService;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+import payload.InviteUserPayload;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -185,5 +188,13 @@ public class UserController {
             response.status(200);
             return users;
         }
+    }
+
+    public static String inviteUser(Request request, Response response) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        InviteUserPayload invitation = mapper.readValue(request.body(), InviteUserPayload.class);
+        new InviteEmail(invitation.getEmail()).sendMail();
+        response.status(200);
+        return "OK";
     }
 }
