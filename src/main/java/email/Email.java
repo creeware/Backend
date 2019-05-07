@@ -36,6 +36,21 @@ public abstract class Email {
         }
     }
 
+    public String getUserDisplayName(UUID userUUID){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        User user = new User();
+        try {
+            user = session.createQuery("from User where user_uuid=:user_uuid", User.class)
+                    .setParameter("user_uuid", userUUID)
+                    .uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+            return user.getUser_display_name();
+        }
+    }
+
     protected ClientResponse sendMail(String recipient, String subject, String body) {
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
         Client client = Client.create();
