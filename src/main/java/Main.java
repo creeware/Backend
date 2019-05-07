@@ -27,7 +27,7 @@ public class Main {
             path(Web.USERS, () -> {
                 delete("/:uuid", "application/json", (request, response) ->
                         UserController.deleteUser(request, response));
-                patch("/patch", UserController::updateUser, new JsonTransformer());
+                patch("/patch/", UserController::updateUser, new JsonTransformer());
                 get("/:uuid", "application/json", (request, response) ->
                         UserController.getUser(request, response), new JsonTransformer());
                 get("/list/", "application/json", (request, response) ->
@@ -37,10 +37,10 @@ public class Main {
             });
 
             path(Web.REPOSITORIES, () -> {
-                post("/post", RepositoryController::insertRepository);
+                post("/post/", RepositoryController::insertRepository);
                 delete("/:uuid", "application/json", (request, response) ->
                         RepositoryController.deleteRepository(request, response));
-                patch("/patch", RepositoryController::updateRepository);
+                patch("/patch/", RepositoryController::updateRepository);
                 get("/:uuid", "application/json", (request, response) ->
                         RepositoryController.getRepository(request, response), new JsonTransformer());
                 get("/list/", "application/json", (request, response) ->
@@ -50,10 +50,10 @@ public class Main {
             });
 
             path(Web.ORGANIZATIONS, () -> {
-                post("/post", OrganizationController::insertOrganization);
+                post("/import/", OrganizationController::importOrganization, new JsonTransformer());
                 delete(":uuid",  (request, response) ->
                         OrganizationController.deleteOrganization(request, response));
-                patch("/patch", OrganizationController::updateOrganization);
+                patch("/patch/", OrganizationController::updateOrganization);
                 get("/:uuid", "application/json", (request, response) ->
                         OrganizationController.getOrganization(request, response), new JsonTransformer());
                 get("/list/", "application/json", (request, response) ->

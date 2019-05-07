@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class FactoryBot {
     public static String roles[] = { "admin", "teacher", "student"};
+    public static String types[] = { "template", "solution", "challenge"};
     public static String statuses[] = { "unreleased", "released", "solved", "failed", "reset"};
 
     public static void main(String args[]) {
@@ -80,7 +81,7 @@ public class FactoryBot {
         Repository repository = new Repository();
         repository.setSolution_repository_git_url(faker.internet().url());
         repository.setRepository_status(statuses[index.nextInt(5)]);
-        repository.setRepository_type("challenge");
+        repository.setRepository_type(types[index.nextInt(3)]);
         repository.setRepository_github_type("public");
         repository.setRepository_visibility("public");
 
