@@ -65,6 +65,14 @@ public class User {
     @Expose
     private String user_bio;
     @Expose
+    private String user_status;
+    @Expose
+    private String canvas_access_token;
+    @Expose
+    private String canvas_base_url;
+    @Expose
+    private String canvas_user_uuid;
+    @Expose
     private Date created_at;
     @Expose
     private Date updated_at;
@@ -78,6 +86,53 @@ public class User {
                         .setParameter("user_client", clientName)
                         .uniqueResult();
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+            return user;
+        }
+    }
+
+    public static User getCanvasUser(UUID user_uuid, String canvas_user_uuid){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        User user = new User();
+        try {
+            user = session.createQuery("from User where user_uuid=:user_uuid AND canvas_user_uuid=:canvas_user_uuid", User.class)
+                    .setParameter("user_uuid", user_uuid)
+                    .setParameter("canvas_user_uuid", canvas_user_uuid)
+                    .uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+            return user;
+        }
+    }
+
+    public static User getCanvasUser(String canvas_user_uuid){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        User user = new User();
+        try {
+            user = session.createQuery("from User where canvas_user_uuid=:canvas_user_uuid", User.class)
+                    .setParameter("canvas_user_uuid", canvas_user_uuid)
+                    .uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+            return user;
+        }
+    }
+
+    public static User getUser(UUID user_uuid){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        User user = new User();
+        try {
+            user = session.createQuery("from User where user_uuid=:user_uuid", User.class)
+                    .setParameter("user_uuid", user_uuid)
+                    .uniqueResult();
+            System.out.println(user.getUsername());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -169,6 +224,30 @@ public class User {
         } finally {
             session.close();
         }
+    }
+
+
+    public static User createCanvasUser(String user_canvas_id){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        User user = new User();
+        try {
+                user.setUser_client("GitHubClient");
+                user.setUser_role("student");
+                user.setJwt_token("temporary_jwt");
+                user.setCreated_at(new Date());
+                user.setUser_uuid(UUID.randomUUID());
+                user.setCanvas_user_uuid(user_canvas_id);
+
+                Transaction transaction = session.beginTransaction();
+                session.persist(user);
+                transaction.commit();
+                user = getCanvasUser(user_canvas_id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+        return user;
     }
 
 }

@@ -5,32 +5,41 @@ import com.google.gson.JsonParser;
 import email.FailEmail;
 import email.SuccessEmail;
 import model.Repository;
+import model.User;
 import spark.Request;
 import spark.Response;
 
+import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 
+import static canvas.CanvasManager.gradeAssignment;
 import static diffing.Diffing.diffRepositories;
 
 public class GithubController {
 
-    public static String payloadHandler(Request req, Response res) throws InvalidPropertiesFormatException {
+    public static String payloadHandler(Request req, Response res) throws IOException {
         JsonParser jsonParser = new JsonParser();
         JsonObject payload = jsonParser.parse(req.body()).getAsJsonObject();
         String repo_name = payload.get("repository").getAsJsonObject().get("name").getAsString();
         Repository repository = Repository.getRepository(repo_name);
-
+        User user = User.getUser(repository.getUser_uuid());
         String result = diffRepositories(repository.getRepository_git_url(), repository.getSolution_repository_git_url());
 
         if (checkResult(result)){
-            repository.setRepository_status("Success");
+            repository.setRepository_status("success");
+            if(repository.getCanvas_assignment_uuid() != null) {
+                gradeAssignment(user, repository.getCanvas_course_uuid(), repository.getCanvas_assignment_uuid(), repository.getCanvas_student_uuid(), "pass");
+            }
             Repository.updateRepository(repository);
 
             SuccessEmail email = new SuccessEmail(repository.getUser_uuid(), repo_name);
             email.sendMail();
         }
         else {
-            repository.setRepository_status("Fail");
+            repository.setRepository_status("sail");
+            if(repository.getCanvas_assignment_uuid() != null) {
+                gradeAssignment(user, repository.getCanvas_course_uuid(), repository.getCanvas_assignment_uuid(), repository.getCanvas_student_uuid(), "fail");
+            }
             Repository.updateRepository(repository);
             FailEmail email = new FailEmail(repository.getUser_uuid(), repo_name, result);
             email.sendMail();

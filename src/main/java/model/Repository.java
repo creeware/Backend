@@ -106,6 +106,13 @@ public class Repository {
     private String repository_status;
     @Expose
     private String solution_repository_git_url;
+    @Expose
+    private String canvas_course_uuid;
+    @Expose
+    private String canvas_assignment_uuid;
+    @Expose
+    private String canvas_student_uuid;
+    @Expose
     private String user_name;
     @Expose
     private Boolean unlimited;
@@ -168,5 +175,21 @@ public class Repository {
         } finally {
             session.close();
         }
+    }
+
+    public static List<Repository> getCanvasRepositories(UUID user_uuid, String canvas_student_uuid){
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        List<Repository> repositories = new ArrayList<Repository>();
+        try {
+            repositories = session.createQuery("from Repository where user_uuid=:user_uuid AND canvas_student_uuid=:canvas_student_uuid", Repository.class)
+                    .setParameter("user_uuid", user_uuid)
+                    .setParameter("canvas_student_uuid", canvas_student_uuid)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+        return repositories;
     }
 }

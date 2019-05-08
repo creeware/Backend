@@ -146,7 +146,6 @@ public class OrganizationController {
     }
 
     public static List<Repository> importOrganization(Request request, Response response) throws IOException {
-        Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
         String jws = request.headers("Authorization").replaceAll("Bearer ", "");
         ObjectMapper mapper = new ObjectMapper();
         NewOrganizationPayload creation = mapper.readValue(request.body(), NewOrganizationPayload.class);
