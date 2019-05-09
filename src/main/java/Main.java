@@ -49,6 +49,7 @@ public class Main {
                         RepositoryController.getRepositories(request, response), new JsonTransformer());
                 get("/minimal_list/", "application/json", (request, response) ->
                         getMinimalRepositories(request, response), new JsonTransformer());
+
             });
 
             path(Web.ORGANIZATIONS, () -> {
@@ -62,6 +63,18 @@ public class Main {
                         OrganizationController.getOrganizations(request, response), new JsonTransformer());
                 get("/minimal_list/", "application/json", (request, response) ->
                         OrganizationController.getMinimalOrganizations(request, response), new JsonTransformer());
+            });
+
+            path(Web.CANVAS, () -> {
+                get("/courses/:uuid", "application/json", CanvasController::getCanvasCourses, new JsonTransformer());
+                get("/students/", "application/json", CanvasController::getCanvasStudents, new JsonTransformer());
+                post("/repository/", "application/json", CanvasController::createCanvasRepository);
+                post("/integrate/", "application/json", CanvasController::integrateUser);
+                post("/migration/", "application/json", CanvasController::migrateUser);
+            });
+
+            path(Web.STATISTICS, () -> {
+                get("/profile/:uuid", StatisticsController::getUserStatistics, new JsonTransformer());
             });
         });
 
