@@ -149,8 +149,9 @@ public class GithubManager {
         }
         List<model.Repository> dbRepositories = new ArrayList<>();
         try {
-             dbRepositories = session.createQuery("from Repository where repository_admin_uuid=:repository_admin_uuid", model.Repository.class)
+             dbRepositories = session.createQuery("from Repository where repository_admin_uuid=:repository_admin_uuid AND organization_uuid=:organization_uuid", model.Repository.class)
                     .setParameter("repository_admin_uuid", user.getUser_uuid())
+                     .setParameter("organization_uuid", newOrganization.getOrganization_uuid())
                     .getResultList();
         } catch (Exception e) {
             e.printStackTrace();

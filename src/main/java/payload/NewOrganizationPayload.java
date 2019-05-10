@@ -1,11 +1,13 @@
 package payload;
 
+import com.google.gson.annotations.Expose;
 import lombok.Data;
 import util.Validable;
 
 @Data
 public class NewOrganizationPayload implements Validable {
 
+    @Expose
     String organization_name;
 
 
