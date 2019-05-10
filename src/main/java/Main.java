@@ -69,7 +69,7 @@ public class Main {
                 get("/courses/:uuid", "application/json", CanvasController::getCanvasCourses, new JsonTransformer());
                 get("/students/", "application/json", CanvasController::getCanvasStudents, new JsonTransformer());
                 post("/repository/", "application/json", CanvasController::createCanvasRepository);
-                post("/integrate/", "application/json", CanvasController::integrateUser);
+                post("/integration/", "application/json", CanvasController::integrateUser);
                 post("/migration/", "application/json", CanvasController::migrateUser);
             });
 

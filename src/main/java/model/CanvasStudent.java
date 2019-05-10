@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class CanvasStudent {
-    @Expose
+
     private String user_name;
     @Expose
     private Integer user_id;

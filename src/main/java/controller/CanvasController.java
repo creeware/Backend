@@ -75,8 +75,8 @@ public class CanvasController {
         JsonObject payload = jsonParser.parse(request.body()).getAsJsonObject();
 
         UUID uuid = UUID.fromString(payload.get("user_uuid").getAsString());
-        String canvas_access_token = payload.get("canvas_course_uuid").getAsString();
-        String canvas_base_url = payload.get("assignment_description").getAsString();
+        String canvas_access_token = payload.get("canvas_access_token").getAsString();
+        String canvas_base_url = payload.get("canvas_base_url").getAsString();
         integrateCanvasUser(uuid, canvas_access_token, canvas_base_url);
         response.status(200);
         return "OK";
