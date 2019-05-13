@@ -135,14 +135,14 @@ public class CanvasManager {
             }
             clone_and_push(access_token, org_name, repo_name, template_repo_name);
             service.createHook(repository, hook);
-            putCanvasRepositoryToDb(repository, canvas_student.getCanvas_user_uuid(), admin_user_name, org_name, solution_repo_url, release_date, canvas_course_uuid, canvas_assignment_uuid);
+            putCanvasRepositoryToDb(repository, canvas_student.getCanvas_user_uuid(), admin_user_name, org_name, template_repo_name, solution_repo_url, release_date, canvas_course_uuid, canvas_assignment_uuid);
 
         }
         return "success";
     }
 
 
-    public static void putCanvasRepositoryToDb(Repository repository, String canvas_user_uuid, String admin_user_name, String org_name, String solution_repo_url, Date release_date, String canvas_course_uuid, String canvas_assignment_uuid) {
+    public static void putCanvasRepositoryToDb(Repository repository, String canvas_user_uuid, String admin_user_name, String org_name, String template_repository_name, String solution_repo_url, Date release_date, String canvas_course_uuid, String canvas_assignment_uuid) {
         Session session = HibernateUtil.getSessionFactory().openSession();
         model.User user = model.User.getCanvasUser(canvas_user_uuid);
         model.User admin = model.User.getUser(admin_user_name, "GitHubClient");
@@ -167,6 +167,8 @@ public class CanvasManager {
         }
         newRepository.setSolution_repository_git_url(solution_repo_url);
         newRepository.setRepository_admin_uuid(admin.getUser_uuid());
+        newRepository.setTemplate_repository_name(template_repository_name);
+        newRepository.setOrganization_name(org_name);
         newRepository.setRelease_date(release_date);
         newRepository.setCreated_at(new Date());
 

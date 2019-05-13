@@ -113,6 +113,10 @@ public class Repository {
     @Expose
     private String canvas_student_uuid;
     @Expose
+    private String template_repository_name;
+    @Expose
+    private String organization_name;
+    @Expose
     private String user_name;
     @Expose
     private Boolean unlimited;
@@ -133,7 +137,7 @@ public class Repository {
         Session session = HibernateUtil.getSessionFactory().openSession();
         Repository repository = new Repository();
         try {
-            repository = session.createQuery("from repository where repository_name=:repository_name", Repository.class)
+            repository = session.createQuery("from Repository where repository_name=:repository_name", Repository.class)
                     .setParameter("repository_name", repositoryName)
                     .uniqueResult();
         } catch (Exception e) {
