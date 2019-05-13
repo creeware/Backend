@@ -6,6 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import model.Repository;
 import model.StandardJsonList;
+import model.User;
 import org.eclipse.egit.github.core.service.OrganizationService;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -73,12 +74,15 @@ public class OrganizationController {
 
 
     public static Organization getOrganization(Request request, Response response) {
+        String jws = request.headers("Authorization").replaceAll("Bearer ", "");
+        User user = User.getUser(jws);
         UUID uuid = UUID.fromString(request.params(":uuid"));
         Session session = HibernateUtil.getSessionFactory().openSession();
         Organization organization = new Organization();
         try {
-            organization = session.createQuery("from Organization where organization_uuid=:organization_uuid", Organization.class)
+            organization = session.createQuery("from Organization where organization_uuid=:organization_uuid AND user_uuid=:user_uuid", Organization.class)
                     .setParameter("organization_uuid", uuid)
+                    .setParameter("user_uuid", user.getUser_uuid())
                     .uniqueResult();
         } catch (Exception e) {
             e.printStackTrace();
@@ -92,6 +96,8 @@ public class OrganizationController {
 
 
     public static StandardJsonList getOrganizations(Request request, Response response) {
+        String jws = request.headers("Authorization").replaceAll("Bearer ", "");
+        User user = User.getUser(jws);
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<Organization> organizations = new ArrayList<Organization>();
         if (request.queryString() != null) {
@@ -115,7 +121,7 @@ public class OrganizationController {
         int lastPageNumber = (int) (Math.ceil(countResults / page_size));
         int index = page_size * (page - 1);
         try {
-            Query query = session.createQuery("from Organization", Organization.class);
+            Query query = session.createQuery("from Organization WHERE user_uuid=:user_uuid", Organization.class).setParameter("user_uuid", user.getUser_uuid());
             //query.setFirstResult(index);
             //query.setMaxResults(page_size);
             organizations = query.getResultList();
@@ -130,10 +136,12 @@ public class OrganizationController {
     }
 
     public static List<Organization> getMinimalOrganizations(Request request, Response response) {
+        String jws = request.headers("Authorization").replaceAll("Bearer ", "");
+        User user = User.getUser(jws);
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<Organization> organizations = new ArrayList<Organization>();
         try {
-            organizations = session.createQuery("from Organization organization", Organization.class).getResultList();
+            organizations = session.createQuery("from Organization organization WHERE user_uuid=:user_uuid", Organization.class).setParameter("user_uuid", user.getUser_uuid()).getResultList();
 
         } catch (Exception e) {
             e.printStackTrace();

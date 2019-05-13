@@ -67,15 +67,13 @@ public class User {
     @Expose
     private String user_status;
     @Expose
-    private String canvas_access_token;
-    @Expose
-    private String canvas_base_url;
-    @Expose
-    private String canvas_user_uuid;
-    @Expose
     private Date created_at;
     @Expose
     private Date updated_at;
+
+    private String canvas_access_token;
+    private String canvas_base_url;
+    private String canvas_user_uuid;
 
     public static User getUser(String username, String clientName){
         Session session = HibernateUtil.getSessionFactory().openSession();
