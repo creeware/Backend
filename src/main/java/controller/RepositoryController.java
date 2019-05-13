@@ -93,12 +93,15 @@ public class RepositoryController {
 
 
     public static Repository getRepository(Request request, Response response){
+        String jws = request.headers("Authorization").replaceAll("Bearer ", "");
+        User user = User.getUser(jws);
         UUID uuid= UUID.fromString(request.params(":uuid"));
         Session session = HibernateUtil.getSessionFactory().openSession();
         Repository repository = new Repository();
         try {
-            repository = session.createQuery("from Repository where repository_uuid=:organization_uuid", Repository.class)
+            repository = session.createQuery("from Repository where repository_uuid=:organization_uuid AND (user_uuid=:user_uuid OR repository_admin_uuid=:user_uuid)", Repository.class)
                     .setParameter("organization_uuid", uuid)
+                    .setParameter("user_uuid", user.getUser_uuid())
                     .uniqueResult();
         } catch (Exception e) {
             e.printStackTrace();
@@ -111,6 +114,8 @@ public class RepositoryController {
     }
 
     public static StandardJsonList getRepositories(Request request, Response response) throws ParseException {
+        String jws = request.headers("Authorization").replaceAll("Bearer ", "");
+        User user = User.getUser(jws);
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<Repository> repositories = new ArrayList<Repository>();
 
@@ -159,7 +164,7 @@ public class RepositoryController {
         int lastPageNumber = (int) (Math.ceil(countResults / page_size));
         int index = page_size * (page - 1);
         try {
-            Query query = session.createQuery("from Repository", Repository.class);
+            Query query = session.createQuery("from Repository WHERE user_uuid=:user_uuid OR repository_admin_uuid=:user_uuid", Repository.class).setParameter("user_uuid", user.getUser_uuid());
             //query.setFirstResult(index);
             //query.setMaxResults(page_size);
             repositories = query.getResultList();
@@ -174,10 +179,14 @@ public class RepositoryController {
     }
 
     public static List<Repository>  getMinimalRepositories(Request request, Response response){
+        String jws = request.headers("Authorization").replaceAll("Bearer ", "");
+        User user = User.getUser(jws);
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<Repository> repositories = new ArrayList<Repository>();
         try {
-            repositories = session.createQuery("from Repository repository", Repository.class).getResultList();
+            repositories = session.createQuery("from Repository repository WHERE user_uuid=:user_uuid OR repository_admin_uuid=:user_uuid", Repository.class)
+                    .setParameter("user_uuid", user.getUser_uuid())
+                    .getResultList();
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -190,6 +190,7 @@ public class CanvasManager {
             user.setCanvas_access_token(canvas_access_token);
             user.setCanvas_base_url(canvas_base_url);
             user.setCanvas_user_uuid(Integer.toString(canvasUser.getId()));
+            user.setUser_role("teacher");
             Transaction transaction = session.beginTransaction();
             session.merge(user);
             transaction.commit();
@@ -215,6 +216,7 @@ public class CanvasManager {
         Session session = HibernateUtil.getSessionFactory().openSession();
         try {
             user.setCanvas_user_uuid(oldUser.getCanvas_user_uuid());
+            user.setUser_role("student");
             Transaction transaction = session.beginTransaction();
             session.merge(user);
             transaction.commit();
