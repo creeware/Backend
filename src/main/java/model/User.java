@@ -130,7 +130,6 @@ public class User {
             user = session.createQuery("from User where user_uuid=:user_uuid", User.class)
                     .setParameter("user_uuid", user_uuid)
                     .uniqueResult();
-            System.out.println(user.getUsername());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

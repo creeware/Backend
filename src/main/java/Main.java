@@ -49,7 +49,7 @@ public class Main {
                         RepositoryController.getRepositories(request, response), new JsonTransformer());
                 get("/minimal_list/", "application/json", (request, response) ->
                         getMinimalRepositories(request, response), new JsonTransformer());
-
+                post("/reset_repository/", "application/json", RepositoryController::resetRepositoriy);
             });
 
             path(Web.ORGANIZATIONS, () -> {

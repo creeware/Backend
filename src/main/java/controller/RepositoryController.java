@@ -22,6 +22,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import static com.github.scribejava.core.revoke.TokenTypeHint.access_token;
+import static github.GithubManager.clone_and_push;
+
 public class RepositoryController {
     // insert a repository
     public static String insertRepository(Request request, Response response) throws ParseException {
@@ -196,5 +199,15 @@ public class RepositoryController {
             response.status(200);
             return repositories;
         }
+    }
+
+    public static String resetRepositoriy(Request request, Response response){
+        JsonParser jsonParser = new JsonParser();
+        JsonObject payload = jsonParser.parse(request.body()).getAsJsonObject();
+        Repository repository = Repository.getRepository(payload.get("repository_name").getAsString());
+        User user = User.getUser(repository.getRepository_admin_uuid());
+        clone_and_push(user.getAccess_token(), repository.getOrganization_name(), repository.getRepository_name(), repository.getTemplate_repository_name());
+        response.status(200);
+        return "success";
     }
 }
