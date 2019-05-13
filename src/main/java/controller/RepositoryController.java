@@ -201,7 +201,7 @@ public class RepositoryController {
         }
     }
 
-    public static String resetRepositoriy(Request request, Response response){
+    public static String resetRepository(Request request, Response response){
         JsonParser jsonParser = new JsonParser();
         JsonObject payload = jsonParser.parse(request.body()).getAsJsonObject();
         Repository repository = Repository.getRepository(payload.get("repository_name").getAsString());
