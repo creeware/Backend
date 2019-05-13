@@ -62,10 +62,11 @@ public class CanvasController {
         String organization_name = payload.get("organization_name").getAsString();
         String assignment_due_date = payload.get("assignment_due_date").getAsString();
         String solution_repo_url = payload.get("solution_repo_url").getAsString();
+        String challenge_type = payload.get("challenge_type").getAsString();
         String[] user_canvas_ids = googleJson.fromJson(payload.get("user_canvas_ids").getAsJsonArray(), String[].class);
         Assignment assignment = createAssignment(user, canvas_course_uuid, assignment_description, assignment_name, assignment_due_date);
 
-        CanvasManager.createCanvasRepository(user, user.getAccess_token(), organization_name, user_canvas_ids, user.getUsername(), repository_name, solution_repo_url, release_date, canvas_course_uuid, assignment.getId().toString());
+        CanvasManager.createCanvasRepository(user, user.getAccess_token(), organization_name, user_canvas_ids, user.getUsername(), repository_name, solution_repo_url, release_date, canvas_course_uuid, assignment.getId().toString(), challenge_type);
         response.status(200);
         return "OK";
     }

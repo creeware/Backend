@@ -33,7 +33,7 @@ public class GithubManager {
     public static void main(String[] args) throws IOException {
     }
 
-    public static String createRepository(String access_token, String org_name, String[] user_names, String admin_user_name, String template_repo_name, String solution_repo_url, Date release_date) throws IOException {
+    public static String createRepository(String access_token, String org_name, String[] user_names, String admin_user_name, String template_repo_name, String solution_repo_url, Date release_date, String challenge_type) throws IOException {
         RepositoryService service = new RepositoryService();
         service.getClient().setOAuth2Token(access_token);
         for (String user_name : user_names) {
@@ -47,12 +47,12 @@ public class GithubManager {
             }
             clone_and_push(access_token, org_name, repo_name, template_repo_name);
             service.createHook(repository, hook);
-            putRepositoryToDb(repository, user_name, admin_user_name, org_name, template_repo_name , solution_repo_url, release_date);
+            putRepositoryToDb(repository, user_name, admin_user_name, org_name, template_repo_name , solution_repo_url, release_date, challenge_type);
         }
         return "success";
     }
 
-    public static void putRepositoryToDb(Repository repository, String user_name, String admin_user_name, String org_name, String template_repository_name, String solution_repo_url, Date release_date) {
+    public static void putRepositoryToDb(Repository repository, String user_name, String admin_user_name, String org_name, String template_repository_name, String solution_repo_url, Date release_date, String challenge_type) {
         Session session = HibernateUtil.getSessionFactory().openSession();
         User user = User.getUser(user_name, "GitHubClient");
         User admin = User.getUser(admin_user_name, "GitHubClient");
@@ -72,6 +72,7 @@ public class GithubManager {
         newRepository.setRepository_admin_uuid(admin.getUser_uuid());
         newRepository.setUser_name(user.getUsername());
         newRepository.setTemplate_repository_name(template_repository_name);
+        newRepository.setChallenge_type(challenge_type);
         newRepository.setOrganization_name(org_name);
         newRepository.setRelease_date(release_date);
         newRepository.setCreated_at(new Date());
@@ -147,7 +148,7 @@ public class GithubManager {
         Organization newOrganization = Organization.createOrganization(user, organization);
         Session session = HibernateUtil.getSessionFactory().openSession();
         for (Repository repository : repositories) {
-            putRepositoryToDb(repository, user.getUsername(), user.getUsername(), newOrganization.getOrganization_name(), repository.getName(), repository.getHtmlUrl(), new Date());
+            putRepositoryToDb(repository, user.getUsername(), user.getUsername(), newOrganization.getOrganization_name(), repository.getName(), repository.getHtmlUrl(), new Date(), "");
         }
         List<model.Repository> dbRepositories = new ArrayList<>();
         try {

@@ -112,7 +112,7 @@ public class CanvasManager {
         conversationImpl.createConversation(options);
     }
 
-    public static String createCanvasRepository(model.User user, String access_token, String org_name, String[] user_canvas_ids, String admin_user_name, String template_repo_name, String solution_repo_url, Date release_date, String canvas_course_uuid, String canvas_assignment_uuid) throws IOException {
+    public static String createCanvasRepository(model.User user, String access_token, String org_name, String[] user_canvas_ids, String admin_user_name, String template_repo_name, String solution_repo_url, Date release_date, String canvas_course_uuid, String canvas_assignment_uuid, String challenge_type) throws IOException {
         RepositoryService service = new RepositoryService();
         service.getClient().setOAuth2Token(access_token);
         for (String user_canvas_id : user_canvas_ids) {
@@ -135,14 +135,14 @@ public class CanvasManager {
             }
             clone_and_push(access_token, org_name, repo_name, template_repo_name);
             service.createHook(repository, hook);
-            putCanvasRepositoryToDb(repository, canvas_student.getCanvas_user_uuid(), admin_user_name, org_name, template_repo_name, solution_repo_url, release_date, canvas_course_uuid, canvas_assignment_uuid);
+            putCanvasRepositoryToDb(repository, canvas_student.getCanvas_user_uuid(), admin_user_name, org_name, template_repo_name, solution_repo_url, release_date, canvas_course_uuid, canvas_assignment_uuid, challenge_type);
 
         }
         return "success";
     }
 
 
-    public static void putCanvasRepositoryToDb(Repository repository, String canvas_user_uuid, String admin_user_name, String org_name, String template_repository_name, String solution_repo_url, Date release_date, String canvas_course_uuid, String canvas_assignment_uuid) {
+    public static void putCanvasRepositoryToDb(Repository repository, String canvas_user_uuid, String admin_user_name, String org_name, String template_repository_name, String solution_repo_url, Date release_date, String canvas_course_uuid, String canvas_assignment_uuid, String challenge_type) {
         Session session = HibernateUtil.getSessionFactory().openSession();
         model.User user = model.User.getCanvasUser(canvas_user_uuid);
         model.User admin = model.User.getUser(admin_user_name, "GitHubClient");
@@ -158,6 +158,7 @@ public class CanvasManager {
         newRepository.setRepository_description(repository.getDescription());
         newRepository.setRepository_visibility(Boolean.toString(!repository.isPrivate()));
         newRepository.setRepository_git_url(repository.getCloneUrl());
+        newRepository.setChallenge_type(challenge_type);
         newRepository.setRepository_github_type(repository.getDefaultBranch());
         newRepository.setRepository_type("challenge");
         if (new SimpleDateFormat("yyyy-MM-dd").format(release_date).equals(new SimpleDateFormat("yyyy-MM-dd").format(new Date()))) {

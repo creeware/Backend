@@ -123,6 +123,8 @@ public class Repository {
     @Expose
     private Integer try_count;
     @Expose
+    private String challenge_type;
+    @Expose
     private Date release_date;
     @Expose
     private Date due_date;
