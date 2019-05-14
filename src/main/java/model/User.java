@@ -229,7 +229,7 @@ public class User {
         User user = new User();
         try {
                 user.setUser_client("GitHubClient");
-                user.setUser_role("student");
+                user.setUser_role("provisional");
                 user.setJwt_token("temporary_jwt");
                 user.setCreated_at(new Date());
                 user.setUser_uuid(UUID.randomUUID());

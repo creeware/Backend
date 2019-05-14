@@ -52,7 +52,6 @@ public class CanvasManager {
         assignment.setDueAt(new SimpleDateFormat("yyyy-MM-dd").parse(assignment_due_date));
         assignment.setGradingType("pass_fail");
         assignment.setPublished(true);
-        System.out.println(user.getUsername());
         String canvasBaseUrl = (user.getCanvas_base_url());
         OauthToken oauthToken = new NonRefreshableOauthToken(user.getCanvas_access_token());
         SimpleRestClient client = new SimpleRestClient();
