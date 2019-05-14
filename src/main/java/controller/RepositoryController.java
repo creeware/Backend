@@ -7,6 +7,7 @@ import github.GithubManager;
 import model.Repository;
 import model.StandardJsonList;
 import model.User;
+import org.eclipse.jgit.transport.Daemon;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -35,7 +36,7 @@ public class RepositoryController {
         User profile = User.getUser(payload.get("admin_user_name").getAsString(), payload.get("client_name").getAsString());
 
         String accessToken = String.valueOf(profile.getAccess_token());
-
+        Date due_date = new SimpleDateFormat("yyyy-MM-dd").parse(payload.get("due_date").getAsString());
         Date release_date = new SimpleDateFormat("yyyy-MM-dd").parse(payload.get("release_date").getAsString());
         String repository_name = payload.get("repository_name").getAsString();
         String organization_name = payload.get("organization_name").getAsString();
@@ -46,7 +47,7 @@ public class RepositoryController {
         String result = "";
         try {
             result = GithubManager.createRepository(accessToken, organization_name, user_names, profile.getUsername(),
-                                                                    repository_name, solutionUrl, release_date, challenge_type);
+                                                                    repository_name, solutionUrl, release_date, challenge_type, due_date);
         } catch (IOException e) {
             e.printStackTrace();
             response.status(400);
