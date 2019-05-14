@@ -23,7 +23,12 @@ public class GithubController {
         String repo_name = payload.get("repository").getAsJsonObject().get("name").getAsString();
         Repository repository = Repository.getRepository(repo_name);
         User user = User.getUser(repository.getUser_uuid());
-        String result = diffRepositories(repository.getRepository_git_url(), repository.getSolution_repository_git_url());
+        String challenge_type = repository.getChallenge_type();
+        String result = "";
+
+        if(challenge_type.equals("structure-diff")){
+            result = diffRepositories(repository.getRepository_git_url(), repository.getSolution_repository_git_url());
+        }
 
         if (checkResult(result)){
             repository.setRepository_status("success");
@@ -36,7 +41,7 @@ public class GithubController {
             email.sendMail();
         }
         else {
-            repository.setRepository_status("sail");
+            repository.setRepository_status("fail");
             if(repository.getCanvas_assignment_uuid() != null) {
                 gradeAssignment(user, repository.getCanvas_course_uuid(), repository.getCanvas_assignment_uuid(), repository.getCanvas_student_uuid(), "fail");
             }
