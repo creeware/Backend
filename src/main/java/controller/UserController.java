@@ -153,14 +153,14 @@ public class UserController {
 
         int page_size = Integer.parseInt(request.queryParamOrDefault("page_size", "10"));
         int page = Integer.parseInt(request.queryParamOrDefault("page", "1"));
-        String countQ = "Select count (user.id) from User user";
+        String countQ = "Select count (user.id) from User user WHERE NOT user_role='provisional'";
         Query countQuery = session.createQuery(countQ);
         Long countResults = (Long) countQuery.uniqueResult();
         int lastPageNumber = (int) (Math.ceil(countResults / page_size));
         int index = page_size * (page - 1);
         List<User> users = new ArrayList<User>();
         try {
-            Query query = session.createQuery("from User", User.class);
+            Query query = session.createQuery("from User WHERE NOT user_role='provisional'", User.class);
             // query.setFirstResult(index);
             // query.setMaxResults(page_size);
             users = query.getResultList();
@@ -178,7 +178,7 @@ public class UserController {
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<User> users = new ArrayList<User>();
         try {
-            users = session.createQuery("from User user", User.class).getResultList();
+            users = session.createQuery("from User WHERE NOT user_role='provisional'", User.class).getResultList();
 
         } catch (Exception e) {
             e.printStackTrace();

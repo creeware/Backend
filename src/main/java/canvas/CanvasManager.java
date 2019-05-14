@@ -188,7 +188,7 @@ public class CanvasManager {
 
     public static void integrateCanvasUser(UUID user_uuid, String canvas_access_token, String canvas_base_url) throws IOException {
         model.User user = getUser(user_uuid);
-        User canvasUser = getUserFromCanvas(user.getCanvas_access_token(), user.getCanvas_base_url());
+        User canvasUser = getUserFromCanvas(canvas_access_token, canvas_base_url);
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             user.setCanvas_access_token(canvas_access_token);
             user.setCanvas_base_url(canvas_base_url);
@@ -208,7 +208,7 @@ public class CanvasManager {
         SimpleRestClient client = new SimpleRestClient();
         UserImpl userImpl = new UserImpl(canvas_base_url, 1, oauthToken, client, 5000, 5000, 1000, false);
 
-
+        System.out.println(canvas_base_url);
         return userImpl.showUserDetails("self").get();
     }
 

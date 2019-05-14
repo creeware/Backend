@@ -78,6 +78,7 @@ public class CanvasController {
         UUID uuid = UUID.fromString(payload.get("user_uuid").getAsString());
         String canvas_access_token = payload.get("canvas_access_token").getAsString();
         String canvas_base_url = payload.get("canvas_base_url").getAsString();
+        System.out.println(canvas_base_url);
         integrateCanvasUser(uuid, canvas_access_token, canvas_base_url);
         response.status(200);
         return "OK";
