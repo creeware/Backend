@@ -43,11 +43,12 @@ public class RepositoryController {
         String[] user_names = googleJson.fromJson(payload.get("user_names").getAsJsonArray(), String[].class);
         String solutionUrl = payload.get("solution_repo_url").getAsString();
         String challenge_type = payload.get("challenge_type").getAsString();
+        String repository_description = payload.get("repository_description").getAsString();
 
         String result = "";
         try {
             result = GithubManager.createRepository(accessToken, organization_name, user_names, profile.getUsername(),
-                                                                    repository_name, solutionUrl, release_date, challenge_type, due_date);
+                                                                    repository_name, solutionUrl, release_date, challenge_type, due_date, repository_description);
         } catch (IOException e) {
             e.printStackTrace();
             response.status(400);
