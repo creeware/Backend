@@ -42,6 +42,9 @@ public class GithubController {
                 email.sendMail();
             } else {
                 repository.setRepository_status("fail");
+                if(!repository.getUnlimited()){
+                    repository.setTry_count(repository.getTry_count()-1);
+                }
                 if (repository.getCanvas_assignment_uuid() != null) {
                     gradeAssignment(admin, repository.getCanvas_course_uuid(), repository.getCanvas_assignment_uuid(), repository.getCanvas_student_uuid(), "fail");
                     System.out.println("lol");

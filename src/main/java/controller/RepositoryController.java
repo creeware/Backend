@@ -8,6 +8,7 @@ import model.Repository;
 import model.StandardJsonList;
 import model.User;
 import org.eclipse.jgit.transport.Daemon;
+import org.eclipse.jgit.transport.InternalHttpServerGlue;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -44,11 +45,18 @@ public class RepositoryController {
         String solutionUrl = payload.get("solution_repo_url").getAsString();
         String challenge_type = payload.get("challenge_type").getAsString();
         String repository_description = payload.get("repository_description").getAsString();
+        Boolean unlimited = payload.get("unlimited").getAsBoolean();
+        Integer try_count;
+        if(unlimited){
+            try_count = null;
+        } else{
+            try_count = payload.get("attempts").getAsInt();
+        }
 
         String result = "";
         try {
             result = GithubManager.createRepository(accessToken, organization_name, user_names, profile.getUsername(),
-                                                                    repository_name, solutionUrl, release_date, challenge_type, due_date, repository_description);
+                                                                    repository_name, solutionUrl, release_date, challenge_type, due_date, repository_description, try_count, unlimited);
         } catch (IOException e) {
             e.printStackTrace();
             response.status(400);
@@ -60,7 +68,7 @@ public class RepositoryController {
 
 
     // Update a repository
-    public static String updateRepository(Request request, Response response) throws IOException {
+    public static Repository updateRepository(Request request, Response response) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         Repository updatedRepository = mapper.readValue(request.body(), Repository.class);
         try {
@@ -71,7 +79,7 @@ public class RepositoryController {
         } finally {
             response.status(200);
             response.type("application/json");
-            return "success";
+            return updatedRepository;
         }
     }
 
