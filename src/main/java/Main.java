@@ -42,7 +42,8 @@ public class Main {
                 post("/post/", RepositoryController::insertRepository);
                 delete("/:uuid", "application/json", (request, response) ->
                         RepositoryController.deleteRepository(request, response));
-                patch("/patch/", RepositoryController::updateRepository);
+                patch("/patch/", "application/json",(request, response) ->
+                        RepositoryController.updateRepository(request,response), new JsonTransformer());
                 get("/:uuid", "application/json", (request, response) ->
                         RepositoryController.getRepository(request, response), new JsonTransformer());
                 get("/list/", "application/json", (request, response) ->
