@@ -62,11 +62,7 @@ public class GithubManager {
         newRepository.setUser_uuid(user.getUser_uuid());
         newRepository.setOrganization_uuid(organization.getOrganization_uuid());
         newRepository.setRepository_name(repository.getName());
-        if(repository_description == null){
-            newRepository.setRepository_description(repository.getDescription());
-        } else{
-            newRepository.setRepository_description(repository_description);
-        }
+        newRepository.setRepository_description(repository_description);
         newRepository.setRepository_visibility(Boolean.toString(!repository.isPrivate()));
         newRepository.setRepository_git_url(repository.getCloneUrl());
         newRepository.setRepository_github_type(repository.getDefaultBranch());
